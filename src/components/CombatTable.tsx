@@ -73,7 +73,7 @@ export default function CombatTable({ action, data, kph }: Props) {
     for (let i = 1; i < kph + 1; i++) {
       if (i % 10 === 0 && i !== 0) {
         encounterList.push(
-          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters
+          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters ?? []
         );
       } else encounterList.push(getRandomEncounter());
     }
@@ -93,22 +93,19 @@ export default function CombatTable({ action, data, kph }: Props) {
   ) => {
     const planetSpawnRate = [{}];
     planetSpawnRate.pop();
-    data.actionDetails[action].monsterSpawnInfo
-      .spawns!.concat(
-        data.actionDetails[action].monsterSpawnInfo.bossFightMonsters
-      )
-      .map((x) => {
-        const monster = data.combatMonsterDetails[x.combatMonsterHrid ?? x];
-        const keys = Object.keys(totalKillsPerMonster);
-        keys.forEach((key) => {
-          if (monster.hrid === key) {
-            planetSpawnRate.push({
-              combatMonsterHrid: monster.hrid,
-              rate: totalKillsPerMonster[key] / kph,
-            });
-          }
-        });
+    const monsterNames = Object.keys(totalKillsPerMonster);
+    monsterNames.map((x) => {
+      const monster = data.combatMonsterDetails[x];
+
+      monsterNames.forEach((monsterName) => {
+        if (monster.hrid === monsterName) {
+          planetSpawnRate.push({
+            combatMonsterHrid: monster.hrid,
+            rate: totalKillsPerMonster[monsterName] / kph,
+          });
+        }
       });
+    });
     return planetSpawnRate;
   };
   const [enemies, setEnemies] = useState<Enemies>(

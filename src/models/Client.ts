@@ -204,7 +204,7 @@ export interface MonsterSpawnInfo {
   maxSpawnCount: number;
   maxTotalStrength: number;
   spawns: Spawn[] | null;
-  bossFightMonsters: [];
+  bossFightMonsters: string[] | null;
   battlesPerBoss: number;
 }
 
