@@ -121,7 +121,7 @@ export default function CombatTable({ action, data, kph }: Props) {
         kph
       ) as Enemies
     );
-  }, [kph]); // only change when there's kph change
+  }, [kph, action]); // only change when there's kph change
 
   const encounterRows = enemies.map((x) => {
     const monster = data.combatMonsterDetails[x.combatMonsterHrid];
