@@ -73,7 +73,8 @@ export default function CombatTable({ action, data, kph }: Props) {
     for (let i = 1; i < kph + 1; i++) {
       if (i % 10 === 0 && i !== 0) {
         encounterList.push(
-          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters ?? []
+          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters ??
+            getRandomEncounter()
         );
       } else encounterList.push(getRandomEncounter());
     }
