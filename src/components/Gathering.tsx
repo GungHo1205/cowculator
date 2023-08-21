@@ -8,7 +8,7 @@ import {
 } from "@mantine/core";
 import { ApiData } from "../services/ApiService";
 import { ActionType, DropTable } from "../models/Client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Icon from "./Icon";
 import { getFriendlyIntString } from "../helpers/Formatting";
 import {
@@ -16,14 +16,21 @@ import {
   getActionSeconds,
   getTeaBonuses,
 } from "../helpers/CommonFunctions";
+import { SkillBonuses } from "../helpers/Types";
 
 interface Props {
   type: ActionType;
   data: ApiData;
   skill: Skill;
+  onSkillBonusesChange: (skill: Skill, skillBonuses: SkillBonuses) => void;
 }
 
-export default function Gathering({ type, data, skill }: Props) {
+export default function Gathering({
+  type,
+  data,
+  skill,
+  onSkillBonusesChange,
+}: Props) {
   const [level, setLevel] = useState<number>(1);
   const [toolBonus, setToolBonus] = useState<number | "">(0);
   const [teas, setTeas] = useState([""]);
@@ -229,6 +236,10 @@ export default function Gathering({ type, data, skill }: Props) {
       </tr>
     );
   });
+
+  useEffect(() => {
+    onSkillBonusesChange(skill, { level, toolBonus, teas });
+  }, [level, toolBonus, teas]);
 
   return (
     <>

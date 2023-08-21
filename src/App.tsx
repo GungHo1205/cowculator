@@ -14,6 +14,9 @@ import Market from "./components/Market";
 import ActionCategorySelector from "./components/ActionCategorySelector";
 import { Suspense, lazy } from "react";
 import { Skill } from "./helpers/CommonFunctions";
+import CombatLevel from "./components/CombatLevel";
+import { SkillBonuses } from "./helpers/Types";
+import { saveDataObject } from "./helpers/Constants";
 
 const ItemLookup = lazy(() => import("./components/ItemLookup"));
 const Enhancing = lazy(() => import("./components/Enhancing"));
@@ -29,8 +32,39 @@ export default function App() {
     refetchInterval: 5 * 60 * 1000,
   });
 
-  if (isLoading || !data) return <Loader />;
+  const onSkillBonusesChange = (skill: Skill, bonuses: SkillBonuses) => {
+    switch (skill) {
+      case "milking":
+        saveDataObject["skills"].milking = bonuses;
+        return;
+      case "foraging":
+        saveDataObject["skills"].foraging = bonuses;
+        return;
+      case "woodcutting":
+        saveDataObject["skills"].woodcutting = bonuses;
+        return;
+      case "cheesesmithing":
+        saveDataObject["skills"].cheesesmithing = bonuses;
+        return;
+      case "crafting":
+        saveDataObject["skills"].crafting = bonuses;
+        return;
+      case "tailoring":
+        saveDataObject["skills"].tailoring = bonuses;
+        return;
+      case "cooking":
+        saveDataObject["skills"].cooking = bonuses;
+        return;
+      case "brewing":
+        saveDataObject["skills"].brewing = bonuses;
+        return;
+      case "enhancing":
+        saveDataObject["skills"].enhancing = bonuses;
+        return;
+    }
+  };
 
+  if (isLoading || !data) return <Loader />;
   return (
     <AppShell
       padding="md"
@@ -85,7 +119,8 @@ export default function App() {
               <Tabs.Tab value="cooking">Cooking</Tabs.Tab>
               <Tabs.Tab value="brewing">Brewing</Tabs.Tab>
               <Tabs.Tab value="enhancing">Enhancing</Tabs.Tab>
-              <Tabs.Tab value="combat">Combat</Tabs.Tab>
+              <Tabs.Tab value="combatLoot">Combat Loot</Tabs.Tab>
+              <Tabs.Tab value="combatLevel">Combat Level(WIP)</Tabs.Tab>
               <Tabs.Tab value="market">Market</Tabs.Tab>
             </Tabs.List>
 
@@ -106,6 +141,7 @@ export default function App() {
                 skill={Skill.Milking}
                 type={ActionType.Milking}
                 data={data}
+                onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
 
@@ -114,6 +150,7 @@ export default function App() {
                 skill={Skill.Foraging}
                 type={ActionType.Foraging}
                 data={data}
+                onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
 
@@ -122,6 +159,7 @@ export default function App() {
                 skill={Skill.Woodcutting}
                 type={ActionType.Woodcutting}
                 data={data}
+                onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
 
@@ -152,8 +190,11 @@ export default function App() {
               <Enhancing data={data} />
             </Tabs.Panel>
 
-            <Tabs.Panel value="combat" pt="xs">
+            <Tabs.Panel value="combatLoot" pt="xs">
               <Combat data={data} />
+            </Tabs.Panel>
+            <Tabs.Panel value="combatLevel" pt="xs">
+              <CombatLevel data={data} />
             </Tabs.Panel>
 
             <Tabs.Panel value="market" pt="xs">

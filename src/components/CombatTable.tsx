@@ -32,9 +32,8 @@ export default function CombatTable({ action, data, kph }: Props) {
   const [fromRaw, setFromRaw] = useState(false);
 
   const getRandomEncounter = () => {
-    const totalWeight = data.actionDetails[
-      action
-    ].monsterSpawnInfo.spawns!.reduce((prev, cur) => prev + cur.rate, 0);
+    const spawns = data.actionDetails[action].monsterSpawnInfo.spawns ?? [];
+    const totalWeight = spawns.reduce((prev, cur) => prev + cur.rate, 0);
 
     const encounterHrids = [];
     let totalStrength = 0;
@@ -47,7 +46,7 @@ export default function CombatTable({ action, data, kph }: Props) {
       const randomWeight = totalWeight * Math.random();
       let cumulativeWeight = 0;
 
-      for (const spawn of data.actionDetails[action].monsterSpawnInfo.spawns!) {
+      for (const spawn of spawns) {
         cumulativeWeight += spawn.rate;
         if (randomWeight <= cumulativeWeight) {
           totalStrength += spawn.strength;
@@ -66,9 +65,7 @@ export default function CombatTable({ action, data, kph }: Props) {
     }
     return encounterHrids;
   };
-  const getMultipleEncounters = (
-    kph: number
-  ): ((() => undefined) | string[])[] => {
+  const getMultipleEncounters = (kph: number): string[][] => {
     const encounterList = [];
     for (let i = 1; i < kph + 1; i++) {
       if (i % 10 === 0 && i !== 0) {
@@ -80,20 +77,20 @@ export default function CombatTable({ action, data, kph }: Props) {
     }
     return encounterList;
   };
-  const getTotalKillsPerMonster = (encounterList: any) => {
-    const count = encounterList.flat().reduce((acc: any, value: any) => {
-      acc[value] = ++acc[value] || 1;
-
-      return acc;
-    }, {});
+  const getTotalKillsPerMonster = (encounterList: string[][]) => {
+    const count = encounterList
+      .flat()
+      .reduce((acc: { [name: string]: number }, value: string) => {
+        acc[value] = ++acc[value] || 1;
+        return acc;
+      }, {});
     return count;
   };
   const getEncounterRate = (
     totalKillsPerMonster: { [name: string]: number },
     kph: number
   ) => {
-    const planetSpawnRate = [{}];
-    planetSpawnRate.pop();
+    const planetSpawnRate: Enemies = [];
     const monsterNames = Object.keys(totalKillsPerMonster);
     monsterNames.map((x) => {
       const monster = data.combatMonsterDetails[x];
@@ -122,6 +119,7 @@ export default function CombatTable({ action, data, kph }: Props) {
         kph
       ) as Enemies
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kph, action]); // only change when there's kph change
 
   const encounterRows = enemies.map((x) => {
