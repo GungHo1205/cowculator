@@ -12,7 +12,7 @@ import getApiData from "./services/ApiService";
 import { ActionType } from "./models/Client";
 import Market from "./components/Market";
 import ActionCategorySelector from "./components/ActionCategorySelector";
-import { Suspense, lazy, useEffect, useRef } from "react";
+import { Suspense, lazy } from "react";
 import { Skill } from "./helpers/CommonFunctions";
 import CombatLevel from "./components/CombatLevel";
 import { CombatData, SaveDataObject, SkillBonuses } from "./helpers/Types";
