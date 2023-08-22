@@ -10,14 +10,21 @@ import {
 } from "@mantine/core";
 import { ApiData } from "../services/ApiService";
 import { ActionFunction } from "../models/Client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CombatLevelTable from "./CombatLevelTable";
 import { NecklaceOfWisdom } from "../helpers/Types";
+import { CombatData, SaveDataObject } from "../helpers/Types";
 
 interface Props {
   data: ApiData;
+  loadedSaveData: SaveDataObject;
+  onCombatSkillChange: (type: string, bonuses: CombatData) => void;
 }
-export default function CombatLevel({ data }: Props) {
+export default function CombatLevel({
+  data,
+  loadedSaveData,
+  onCombatSkillChange,
+}: Props) {
   const [action, setAction] = useState<string | null>(null);
   const [kph, setKph] = useState<number>(0);
   const [style, setStyle] = useState<string | null>(null);
@@ -44,7 +51,44 @@ export default function CombatLevel({ data }: Props) {
   const handleEnhancementLevelChange = (n: number) => {
     setNecklaceOfWisdom({ withNecklaceOfWisdom: true, enhancementLevel: n });
   };
+  useEffect(() => {
+    setAction(loadedSaveData.skills.combatLevel.data.zone);
+    setKph(loadedSaveData.skills.combatLevel.data.encountersHr);
+    setLevel(loadedSaveData.skills.combatLevel.bonuses?.level || "");
+    setXp(loadedSaveData.skills.combatLevel.bonuses?.experience || "");
 
+    setTargetLevel(
+      loadedSaveData.skills.combatLevel.bonuses?.targetLevel || ""
+    );
+
+    setWithTea(
+      loadedSaveData.skills.combatLevel.bonuses?.withWisdomCoffee || false
+    );
+
+    setNecklaceOfWisdom({
+      withNecklaceOfWisdom:
+        loadedSaveData.skills.combatLevel.bonuses?.withNecklaceOfWisdom ||
+        false,
+      enhancementLevel:
+        loadedSaveData.skills.combatLevel.bonuses?.enhancementLevel || 0,
+    });
+  }, []);
+  useEffect(() => {
+    onCombatSkillChange("level", {
+      data: {
+        zone: action || null,
+        encountersHr: kph,
+      },
+      bonuses: {
+        level: level || "",
+        experience: xp || "",
+        targetLevel: targetLevel || "",
+        withWisdomCoffee: withWisdomCoffee || false,
+        withNecklaceOfWisdom: necklaceOfWisdom.withNecklaceOfWisdom || false,
+        enhancementLevel: necklaceOfWisdom.enhancementLevel || 0,
+      },
+    });
+  }, [action, kph]);
   const handleExperienceChange = (input: string): number => {
     let output = 0;
     if (input !== "") output = parseFloat(input.replace(/,/g, ""));

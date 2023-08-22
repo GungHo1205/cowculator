@@ -9,15 +9,23 @@ import {
 } from "@mantine/core";
 import Materials from "./Materials";
 import { ApiData } from "../services/ApiService";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Skill, getTeaBonuses } from "../helpers/CommonFunctions";
+import { SaveDataObject, SkillBonuses } from "../helpers/Types";
 
 interface Props {
   skill: Skill;
   data: ApiData;
+  loadedSaveData: SaveDataObject;
+  onSkillBonusesChange: (skill: Skill, skillBonuses: SkillBonuses) => void;
 }
 
-export default function ActionCategorySelector({ skill, data }: Props) {
+export default function ActionCategorySelector({
+  skill,
+  data,
+  loadedSaveData,
+  onSkillBonusesChange,
+}: Props) {
   const [fromRaw, setFromRaw] = useState(false);
   const [level, setLevel] = useState<number | "">(1);
   const [xp, setXp] = useState<number | "">("");
@@ -26,7 +34,29 @@ export default function ActionCategorySelector({ skill, data }: Props) {
   const [teas, setTeas] = useState([""]);
 
   const { teaError, levelTeaBonus } = getTeaBonuses(teas, skill);
-
+  useEffect(() => {
+    const skillValues = Object.values(Skill);
+    skillValues.forEach((value) => {
+      if (skill === value) {
+        setLevel(loadedSaveData.skills[value].bonuses.level);
+        setToolBonus(loadedSaveData.skills[value].bonuses.toolBonus);
+        setTeas(loadedSaveData.skills[value].bonuses.teas);
+        setXp(loadedSaveData.skills[value].bonuses.experience || "");
+        setTargetLevel(loadedSaveData.skills[value].bonuses.targetLevel || "");
+      }
+    });
+  }, []);
+  useEffect(() => {
+    onSkillBonusesChange(skill, {
+      bonuses: {
+        level,
+        toolBonus,
+        teas,
+        experience: xp,
+        targetLevel,
+      },
+    });
+  }, [level, toolBonus, teas, xp, targetLevel]);
   const availableTeas = Object.values(data.itemDetails)
     .filter(
       (x) =>

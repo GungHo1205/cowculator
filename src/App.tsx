@@ -12,11 +12,11 @@ import getApiData from "./services/ApiService";
 import { ActionType } from "./models/Client";
 import Market from "./components/Market";
 import ActionCategorySelector from "./components/ActionCategorySelector";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Skill } from "./helpers/CommonFunctions";
 import CombatLevel from "./components/CombatLevel";
-import { SkillBonuses } from "./helpers/Types";
-import { saveDataObject } from "./helpers/Constants";
+import { CombatData, SaveDataObject, SkillBonuses } from "./helpers/Types";
+import { saveDataObject, saveDataString } from "./helpers/Constants";
 
 const ItemLookup = lazy(() => import("./components/ItemLookup"));
 const Enhancing = lazy(() => import("./components/Enhancing"));
@@ -35,34 +35,67 @@ export default function App() {
   const onSkillBonusesChange = (skill: Skill, bonuses: SkillBonuses) => {
     switch (skill) {
       case "milking":
-        saveDataObject["skills"].milking = bonuses;
+        saveDataObject["skills"].milking.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
         return;
       case "foraging":
-        saveDataObject["skills"].foraging = bonuses;
+        saveDataObject["skills"].foraging.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "woodcutting":
-        saveDataObject["skills"].woodcutting = bonuses;
+        saveDataObject["skills"].woodcutting.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "cheesesmithing":
-        saveDataObject["skills"].cheesesmithing = bonuses;
+        saveDataObject["skills"].cheesesmithing.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "crafting":
-        saveDataObject["skills"].crafting = bonuses;
+        saveDataObject["skills"].crafting.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "tailoring":
-        saveDataObject["skills"].tailoring = bonuses;
+        saveDataObject["skills"].tailoring.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "cooking":
-        saveDataObject["skills"].cooking = bonuses;
+        saveDataObject["skills"].cooking.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "brewing":
-        saveDataObject["skills"].brewing = bonuses;
+        saveDataObject["skills"].brewing.bonuses = bonuses.bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+
         return;
       case "enhancing":
-        saveDataObject["skills"].enhancing = bonuses;
+        saveDataObject["skills"].enhancing.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].enhancing.item = bonuses.item;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
         return;
     }
   };
+  const onCombatSkillChange = (type: string, bonuses: CombatData) => {
+    switch (type) {
+      case "loot":
+        saveDataObject["skills"].combatLoot.data = bonuses.data;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+        return;
+      case "level":
+        saveDataObject["skills"].combatLevel = bonuses;
+        localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
+        return;
+    }
+  };
+  const loadedSaveData: SaveDataObject = JSON.parse(
+    localStorage.getItem("saveDataObject") || ""
+  );
+  console.log(saveDataString);
 
   if (isLoading || !data) return <Loader />;
   return (
@@ -141,6 +174,7 @@ export default function App() {
                 skill={Skill.Milking}
                 type={ActionType.Milking}
                 data={data}
+                loadedSaveData={loadedSaveData}
                 onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
@@ -150,6 +184,7 @@ export default function App() {
                 skill={Skill.Foraging}
                 type={ActionType.Foraging}
                 data={data}
+                loadedSaveData={loadedSaveData}
                 onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
@@ -159,6 +194,7 @@ export default function App() {
                 skill={Skill.Woodcutting}
                 type={ActionType.Woodcutting}
                 data={data}
+                loadedSaveData={loadedSaveData}
                 onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
@@ -167,34 +203,68 @@ export default function App() {
               <ActionCategorySelector
                 skill={Skill.Cheesesmithing}
                 data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
               />
             </Tabs.Panel>
 
             <Tabs.Panel value="crafting" pt="xs">
-              <ActionCategorySelector skill={Skill.Crafting} data={data} />
+              <ActionCategorySelector
+                skill={Skill.Crafting}
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="tailoring" pt="xs">
-              <ActionCategorySelector skill={Skill.Tailoring} data={data} />
+              <ActionCategorySelector
+                skill={Skill.Tailoring}
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="cooking" pt="xs">
-              <ActionCategorySelector skill={Skill.Cooking} data={data} />
+              <ActionCategorySelector
+                skill={Skill.Cooking}
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="brewing" pt="xs">
-              <ActionCategorySelector skill={Skill.Brewing} data={data} />
+              <ActionCategorySelector
+                skill={Skill.Brewing}
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="enhancing" pt="xs">
-              <Enhancing data={data} />
+              <Enhancing
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onSkillBonusesChange={onSkillBonusesChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="combatLoot" pt="xs">
-              <Combat data={data} />
+              <Combat
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onCombatSkillChange={onCombatSkillChange}
+              />
             </Tabs.Panel>
             <Tabs.Panel value="combatLevel" pt="xs">
-              <CombatLevel data={data} />
+              <CombatLevel
+                data={data}
+                loadedSaveData={loadedSaveData}
+                onCombatSkillChange={onCombatSkillChange}
+              />
             </Tabs.Panel>
 
             <Tabs.Panel value="market" pt="xs">

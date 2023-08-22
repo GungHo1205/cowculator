@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Flex,
   Group,
@@ -12,12 +12,19 @@ import { ApiData } from "../services/ApiService";
 import EnhancingCalc from "./EnhancingCalc";
 import { ActionType } from "../models/Client";
 import { Skill, getTeaBonuses } from "../helpers/CommonFunctions";
+import { SaveDataObject, SkillBonuses } from "../helpers/Types";
 
 interface Props {
   data: ApiData;
+  loadedSaveData: SaveDataObject;
+  onSkillBonusesChange: (skill: Skill, skillBonuses: SkillBonuses) => void;
 }
 
-export default function Enhancing({ data }: Props) {
+export default function Enhancing({
+  data,
+  loadedSaveData,
+  onSkillBonusesChange,
+}: Props) {
   const skill = Skill.Enhancing;
   const [item, setItem] = useState<string | null>(null);
   const [level, setLevel] = useState<number | "">(1);
@@ -40,7 +47,31 @@ export default function Enhancing({ data }: Props) {
   );
 
   const { teaError, levelTeaBonus } = getTeaBonuses(teas, skill);
+  useEffect(() => {
+    console.log(loadedSaveData);
+    const skillValues = Object.values(Skill);
+    console.log(skillValues);
 
+    skillValues.forEach((value) => {
+      if (skill === value) {
+        setLevel(loadedSaveData.skills[value].bonuses.level || "");
+        setToolBonus(loadedSaveData.skills[value].bonuses.toolBonus || 0);
+        setTeas(loadedSaveData.skills[value].bonuses.teas || []);
+        setItem(loadedSaveData.skills[value].item?.item || null);
+        setTarget(loadedSaveData.skills[value].item?.target || 1);
+      }
+    });
+  }, []);
+  useEffect(() => {
+    onSkillBonusesChange(skill, {
+      bonuses: {
+        level,
+        toolBonus,
+        teas,
+      },
+      item: { item, target },
+    });
+  }, [level, toolBonus, teas, item, target]);
   const items = useMemo(
     () =>
       Object.values(data.itemDetails)

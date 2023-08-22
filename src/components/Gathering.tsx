@@ -16,12 +16,13 @@ import {
   getActionSeconds,
   getTeaBonuses,
 } from "../helpers/CommonFunctions";
-import { SkillBonuses } from "../helpers/Types";
+import { SaveDataObject, SkillBonuses } from "../helpers/Types";
 
 interface Props {
   type: ActionType;
   data: ApiData;
   skill: Skill;
+  loadedSaveData: SaveDataObject;
   onSkillBonusesChange: (skill: Skill, skillBonuses: SkillBonuses) => void;
 }
 
@@ -29,14 +30,26 @@ export default function Gathering({
   type,
   data,
   skill,
+  loadedSaveData,
   onSkillBonusesChange,
 }: Props) {
-  const [level, setLevel] = useState<number>(1);
+  const [level, setLevel] = useState<number | "">(1);
   const [toolBonus, setToolBonus] = useState<number | "">(0);
   const [teas, setTeas] = useState([""]);
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});
+
+  useEffect(() => {
+    const skillValues = Object.values(Skill);
+    skillValues.forEach((value) => {
+      if (skill === value) {
+        setLevel(loadedSaveData["skills"][value].bonuses.level);
+        setToolBonus(loadedSaveData.skills[value].bonuses.toolBonus);
+        setTeas(loadedSaveData.skills[value].bonuses.teas);
+      }
+    });
+  }, []);
 
   const {
     levelTeaBonus,
@@ -46,7 +59,7 @@ export default function Gathering({
     teaError,
   } = getTeaBonuses(teas, skill);
 
-  const effectiveLevel = level + levelTeaBonus;
+  const effectiveLevel = (level || 1) + levelTeaBonus;
 
   const availableTeas = Object.values(data.itemDetails)
     .filter((x) => x.consumableDetail.usableInActionTypeMap?.[type])
@@ -238,7 +251,7 @@ export default function Gathering({
   });
 
   useEffect(() => {
-    onSkillBonusesChange(skill, { level, toolBonus, teas });
+    onSkillBonusesChange(skill, { bonuses: { level, toolBonus, teas } });
   }, [level, toolBonus, teas]);
 
   return (
