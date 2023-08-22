@@ -279,12 +279,6 @@ export default function CombatLevelTable({
   );
 
   useEffect(() => {
-    console.log(fromRaw === true);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [xp, level, targetLevel, kph]); // only change when there's kph change
-
-  useEffect(() => {
     setExpPerHour(getExpPerHourUsingStyle(style, kph, expMultiplier));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [style, kph, expMultiplier]); // only change when there's kph change

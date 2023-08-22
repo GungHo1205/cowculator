@@ -48,10 +48,7 @@ export default function Enhancing({
 
   const { teaError, levelTeaBonus } = getTeaBonuses(teas, skill);
   useEffect(() => {
-    console.log(loadedSaveData);
     const skillValues = Object.values(Skill);
-    console.log(skillValues);
-
     skillValues.forEach((value) => {
       if (skill === value) {
         setLevel(loadedSaveData.skills[value].bonuses.level || "");

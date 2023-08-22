@@ -93,7 +93,7 @@ export default function App() {
     }
   };
   const loadedSaveData: SaveDataObject = JSON.parse(
-    localStorage.getItem("saveDataObject") || ""
+    localStorage.getItem("saveDataObject") || saveDataString
   );
   console.log(saveDataString);
 
