@@ -97,10 +97,23 @@ export default function CombatTable({ action, data, kph }: Props) {
 
       monsterNames.forEach((monsterName) => {
         if (monster.hrid === monsterName) {
-          planetSpawnRate.push({
-            combatMonsterHrid: monster.hrid,
-            rate: totalKillsPerMonster[monsterName] / kph,
-          });
+          if (
+            data.actionDetails[action].monsterSpawnInfo.bossFightMonsters !==
+              null &&
+            data.actionDetails[action].monsterSpawnInfo
+              .bossFightMonsters![0] === monsterName &&
+            kph % 10 !== 0
+          ) {
+            planetSpawnRate.push({
+              combatMonsterHrid: monster.hrid,
+              rate:
+                (((kph / 10) % 1) + totalKillsPerMonster[monsterName]) / kph,
+            });
+          } else
+            planetSpawnRate.push({
+              combatMonsterHrid: monster.hrid,
+              rate: totalKillsPerMonster[monsterName] / kph,
+            });
         }
       });
     });
@@ -137,7 +150,7 @@ export default function CombatTable({ action, data, kph }: Props) {
             <Icon hrid={x.combatMonsterHrid} /> {monster.name}
           </Flex>
         </td>
-        <td>{getFriendlyIntString(x.rate, 2)}</td>
+        <td>{getFriendlyIntString(x.rate, 3)}</td>
       </tr>
     );
   });

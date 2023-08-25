@@ -20,6 +20,7 @@ interface Props {
   fromRaw: boolean;
   teas: string[];
   skill: Skill;
+  itemBonusEfficiency: { eyeWatch: number; redChefsHat: number };
 }
 
 export default function Materials({
@@ -32,6 +33,7 @@ export default function Materials({
   fromRaw = false,
   teas,
   skill,
+  itemBonusEfficiency,
 }: Props) {
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
@@ -55,7 +57,6 @@ export default function Materials({
         }),
     [actionCategory, data.actionDetails]
   );
-
   const relevantItems = useMemo(
     () => [
       ...new Set(
@@ -70,7 +71,6 @@ export default function Materials({
     ],
     [actions, data.itemDetails]
   );
-
   const getApproxValue = (hrid: string): number => {
     if (hrid === "/items/coin") return 1;
 
@@ -107,7 +107,12 @@ export default function Materials({
     const levelReq = x.levelRequirement.level;
     const efficiency =
       Math.max(1, (100 + (effectiveLevel || 1) - levelReq) / 100) +
-      efficiencyTeaBonus;
+      efficiencyTeaBonus +
+      (skill === "cheesesmithing" ||
+      skill === "crafting" ||
+      skill === "tailoring"
+        ? itemBonusEfficiency.eyeWatch
+        : itemBonusEfficiency.redChefsHat);
 
     let actionsToTarget = 0;
 

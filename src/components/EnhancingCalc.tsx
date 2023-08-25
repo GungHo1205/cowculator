@@ -14,6 +14,7 @@ interface Props {
   toolPercent: number;
   target: number;
   teas: string[];
+  itemBonus: { enchantedGloves: number };
 }
 
 const FAIL_XP = 0.1;
@@ -26,6 +27,7 @@ export default function EnhancingCalc({
   toolPercent,
   target,
   teas,
+  itemBonus,
 }: Props) {
   const toolBonus = toolPercent * 0.01;
   const action = data.actionDetails["/actions/enhancing/enhance"];
@@ -47,10 +49,12 @@ export default function EnhancingCalc({
   const level = baseLevel + teaLevelBonus;
 
   if (!item.enhancementCosts) return <Loader />;
-
   const actionTimer =
     (action.baseTimeCost / 1000000000) *
-    Math.min(1, 100 / (100 + level - item.itemLevel));
+      Math.min(1, 100 / (100 + level - item.itemLevel)) -
+    (action.baseTimeCost / 1000000000) *
+      Math.min(1, 100 / (100 + level - item.itemLevel)) *
+      itemBonus.enchantedGloves;
 
   const getApproxValue = (hrid: string): number => {
     if (hrid === "/items/coin") return 1;
@@ -226,25 +230,27 @@ export default function EnhancingCalc({
 
   const averageEnhanceXp = getAverageEnhanceXp();
 
-  const protectionItemRows = protectionItems.map((x) => {
+  const protectionItemRows = protectionItems.map((x, i) => {
     const marketItem = data.itemDetails[x.itemHrid];
     return (
-      <tr>
-        <td>
-          <Flex
-            justify="flex-start"
-            align="center"
-            direction="row"
-            wrap="wrap"
-            gap="xs"
-          >
-            <Icon hrid={x.itemHrid} /> {marketItem.name}
-          </Flex>
-        </td>
-        <td>{getFriendlyIntString(marketItem.ask)}</td>
-        <td>{getFriendlyIntString(marketItem.bid)}</td>
-        <td>{getFriendlyIntString(marketItem.sellPrice)}</td>
-      </tr>
+      <tbody key={i}>
+        <tr>
+          <td>
+            <Flex
+              justify="flex-start"
+              align="center"
+              direction="row"
+              wrap="wrap"
+              gap="xs"
+            >
+              <Icon hrid={x.itemHrid} /> {marketItem.name}
+            </Flex>
+          </td>
+          <td>{getFriendlyIntString(marketItem.ask)}</td>
+          <td>{getFriendlyIntString(marketItem.bid)}</td>
+          <td>{getFriendlyIntString(marketItem.sellPrice)}</td>
+        </tr>
+      </tbody>
     );
   });
 
@@ -360,7 +366,7 @@ export default function EnhancingCalc({
                 <th>Vendor</th>
               </tr>
             </thead>
-            <tbody>{protectionItemRows}</tbody>
+            {protectionItemRows}
           </Table>
         </Flex>
       </Flex>

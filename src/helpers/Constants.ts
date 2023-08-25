@@ -1,8 +1,23 @@
 export const saveDataString = JSON.stringify({
   skills: {
-    milking: { bonuses: { level: 1, toolBonus: 0, teas: [] } },
-    foraging: { bonuses: { level: 1, toolBonus: 0, teas: [] } },
-    woodcutting: { bonuses: { level: 1, toolBonus: 0, teas: [] } },
+    milking: {
+      bonuses: { level: 1, toolBonus: 0, teas: [] },
+      itemBonuses: {
+        collectorsBoots: { withCollectorsBoots: false, enhancementLevel: 0 },
+      },
+    },
+    foraging: {
+      bonuses: { level: 1, toolBonus: 0, teas: [] },
+      itemBonuses: {
+        collectorsBoots: { withCollectorsBoots: false, enhancementLevel: 0 },
+      },
+    },
+    woodcutting: {
+      bonuses: { level: 1, toolBonus: 0, teas: [] },
+      itemBonuses: {
+        collectorsBoots: { withCollectorsBoots: false, enhancementLevel: 0 },
+      },
+    },
     cheesesmithing: {
       bonuses: {
         level: 1,
@@ -10,6 +25,13 @@ export const saveDataString = JSON.stringify({
         teas: [],
         experience: "",
         targetLevel: "",
+      },
+      itemBonuses: {
+        eyeWatch: {
+          type: "EyeWatch",
+          withEyeWatch: false,
+          enhancementLevel: 0,
+        },
       },
     },
     crafting: {
@@ -20,6 +42,13 @@ export const saveDataString = JSON.stringify({
         experience: "",
         targetLevel: "",
       },
+      itemBonuses: {
+        eyeWatch: {
+          type: "EyeWatch",
+          withEyeWatch: false,
+          enhancementLevel: 0,
+        },
+      },
     },
     tailoring: {
       bonuses: {
@@ -28,6 +57,13 @@ export const saveDataString = JSON.stringify({
         teas: [],
         experience: "",
         targetLevel: "",
+      },
+      itemBonuses: {
+        eyeWatch: {
+          type: "EyeWatch",
+          withEyeWatch: false,
+          enhancementLevel: 0,
+        },
       },
     },
     cooking: {
@@ -38,6 +74,13 @@ export const saveDataString = JSON.stringify({
         experience: "",
         targetLevel: "",
       },
+      itemBonuses: {
+        redChefsHat: {
+          type: "RedChefsHat",
+          withRedChefsHat: false,
+          enhancementLevel: 0,
+        },
+      },
     },
     brewing: {
       bonuses: {
@@ -47,6 +90,13 @@ export const saveDataString = JSON.stringify({
         experience: "",
         targetLevel: "",
       },
+      itemBonuses: {
+        redChefsHat: {
+          type: "RedChefsHat",
+          withRedChefsHat: false,
+          enhancementLevel: 0,
+        },
+      },
     },
     enhancing: {
       bonuses: {
@@ -55,6 +105,9 @@ export const saveDataString = JSON.stringify({
         teas: [],
       },
       item: { item: null, target: 1 },
+      itemBonuses: {
+        enchantedGloves: { withEnchantedGloves: false, enhancementLevel: 0 },
+      },
     },
     combatLoot: { data: { zone: "", encountersHr: 0 } },
     combatLevel: {
@@ -71,5 +124,5 @@ export const saveDataString = JSON.stringify({
   },
 });
 export const saveDataObject = JSON.parse(
-  '{"skills":{"milking":{"bonuses":{"level":1,"toolBonus":0,"teas":[]}},"foraging":{"bonuses":{"level":1,"toolBonus":0,"teas":[]}},"woodcutting":{"bonuses":{"level":1,"toolBonus":0,"teas":[]}},"cheesesmithing":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""}},"crafting":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""}},"tailoring":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""}},"cooking":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""}},"brewing":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""}},"enhancing":{"bonuses":{"level":1,"toolBonus":0,"teas":[]},"item":{"item":null,"target":1}},"combatLoot":{"data":{"zone":"","encountersHr":0}},"combatLevel":{"data":{"zone":"","encountersHr":0},"bonuses":{"level":"","experience":"","targetlevel":"","withWisdomCoffee":false,"withNecklaceOfWisdom":false,"enhancementLevel":0}}}}'
+  '{"skills":{"milking":{"bonuses":{"level":1,"toolBonus":0,"teas":[]},"itemBonuses":{"collectorsBoots":{"withCollectorsBoots":false,"enhancementLevel":0}}},"foraging":{"bonuses":{"level":1,"toolBonus":0,"teas":[]},"itemBonuses":{"collectorsBoots":{"withCollectorsBoots":false,"enhancementLevel":0}}},"woodcutting":{"bonuses":{"level":1,"toolBonus":0,"teas":[]},"itemBonuses":{"collectorsBoots":{"withCollectorsBoots":false,"enhancementLevel":0}}},"cheesesmithing":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""},"itemBonuses":{"eyeWatch":{"type":"EyeWatch","withEyeWatch":false,"enhancementLevel":0}}},"crafting":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""},"itemBonuses":{"eyeWatch":{"type":"EyeWatch","withEyeWatch":false,"enhancementLevel":0}}},"tailoring":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""},"itemBonuses":{"eyeWatch":{"type":"EyeWatch","withEyeWatch":false,"enhancementLevel":0}}},"cooking":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""},"itemBonuses":{"redChefsHat":{"type":"RedChefsHat","withRedChefsHat":false,"enhancementLevel":0}}},"brewing":{"bonuses":{"level":1,"toolBonus":0,"teas":[],"experience":"","targetLevel":""},"itemBonuses":{"redChefsHat":{"type":"RedChefsHat","withRedChefsHat":false,"enhancementLevel":0}}},"enhancing":{"bonuses":{"level":1,"toolBonus":0,"teas":[]},"item":{"item":null,"target":1},"itemBonuses":{"enchantedGloves":{"withEnchantedGloves":false,"enhancementLevel":0}}},"combatLoot":{"data":{"zone":"","encountersHr":0}},"combatLevel":{"data":{"zone":"","encountersHr":0},"bonuses":{"level":"","experience":"","targetlevel":"","withWisdomCoffee":false,"withNecklaceOfWisdom":false,"enhancementLevel":0}}}}'
 );

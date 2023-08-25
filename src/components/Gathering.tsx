@@ -3,6 +3,7 @@ import {
   MultiSelect,
   NumberInput,
   Space,
+  Switch,
   Table,
   Text,
 } from "@mantine/core";
@@ -16,7 +17,11 @@ import {
   getActionSeconds,
   getTeaBonuses,
 } from "../helpers/CommonFunctions";
-import { SaveDataObject, SkillBonuses } from "../helpers/Types";
+import {
+  CollectorsBoots,
+  SaveDataObject,
+  SkillBonuses,
+} from "../helpers/Types";
 
 interface Props {
   type: ActionType;
@@ -39,7 +44,13 @@ export default function Gathering({
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});
-
+  const [collectorsBoots, setCollectorsBoots] = useState<CollectorsBoots>({
+    withCollectorsBoots: false,
+    enhancementLevel: 0,
+  });
+  const handleEnhancementLevelChange = (n: number) => {
+    setCollectorsBoots({ withCollectorsBoots: true, enhancementLevel: n });
+  };
   useEffect(() => {
     const skillValues = Object.values(Skill);
     skillValues.forEach((value) => {
@@ -47,6 +58,12 @@ export default function Gathering({
         setLevel(loadedSaveData["skills"][value].bonuses.level);
         setToolBonus(loadedSaveData.skills[value].bonuses.toolBonus);
         setTeas(loadedSaveData.skills[value].bonuses.teas);
+        setCollectorsBoots(
+          loadedSaveData.skills[value].itemBonuses!.collectorsBoots ?? {
+            withCollectorsBoots: false,
+            enhancementLevel: 0,
+          }
+        );
       }
     });
   }, []);
@@ -58,6 +75,24 @@ export default function Gathering({
     efficiencyTeaBonus,
     teaError,
   } = getTeaBonuses(teas, skill);
+
+  const getCollectorsBootsBonusWithEnhancement = (
+    collectorsBoots: CollectorsBoots
+  ): number => {
+    const collectorsBootsItem =
+      data.itemDetails["/items/collectors_boots"].equipmentDetail;
+    const collectorsBootsEfficiencyBonus =
+      collectorsBootsItem.noncombatStats.milkingEfficiency;
+    const enhancementBonusTable =
+      data.enhancementLevelTotalBonusMultiplierTable;
+    const collectorsBootsEfficiencyBonusWithEnhancement =
+      collectorsBootsEfficiencyBonus +
+      collectorsBootsEfficiencyBonus *
+        ((enhancementBonusTable[collectorsBoots.enhancementLevel] * 2) / 100);
+    return collectorsBoots.withCollectorsBoots
+      ? collectorsBootsEfficiencyBonusWithEnhancement
+      : 0;
+  };
 
   const effectiveLevel = (level || 1) + levelTeaBonus;
 
@@ -190,8 +225,8 @@ export default function Gathering({
     const levelReq = x.levelRequirement.level;
     const efficiency =
       Math.max(1, (100 + (effectiveLevel || 1) - levelReq) / 100) +
-      efficiencyTeaBonus;
-
+      efficiencyTeaBonus +
+      getCollectorsBootsBonusWithEnhancement(collectorsBoots);
     const lootPerAction = getItemsPerAction(x.dropTable).concat(
       getRareItemsPerAction(x.rareDropTable)
     );
@@ -251,8 +286,11 @@ export default function Gathering({
   });
 
   useEffect(() => {
-    onSkillBonusesChange(skill, { bonuses: { level, toolBonus, teas } });
-  }, [level, toolBonus, teas]);
+    onSkillBonusesChange(skill, {
+      bonuses: { level, toolBonus, teas },
+      itemBonuses: { collectorsBoots },
+    });
+  }, [level, toolBonus, teas, collectorsBoots]);
 
   return (
     <>
@@ -295,6 +333,26 @@ export default function Gathering({
           error={teaError}
           clearable
         />
+        <Switch
+          onLabel="WITH COLLECTOR'S BOOTS"
+          offLabel="NO COLLECTOR'S BOOTS"
+          size="xl"
+          checked={collectorsBoots.withCollectorsBoots}
+          onChange={(event) =>
+            setCollectorsBoots({
+              withCollectorsBoots: event.currentTarget.checked,
+              enhancementLevel: 0,
+            })
+          }
+        />
+        {collectorsBoots.withCollectorsBoots && (
+          <NumberInput
+            value={collectorsBoots.enhancementLevel}
+            onChange={handleEnhancementLevelChange}
+            label="Enhancement Level"
+            hideControls
+          />
+        )}
       </Flex>
       <Space h="md" />
       <Flex

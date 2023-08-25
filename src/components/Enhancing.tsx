@@ -7,12 +7,17 @@ import {
   Select,
   Tooltip,
   Text,
+  Switch,
 } from "@mantine/core";
 import { ApiData } from "../services/ApiService";
 import EnhancingCalc from "./EnhancingCalc";
 import { ActionType } from "../models/Client";
 import { Skill, getTeaBonuses } from "../helpers/CommonFunctions";
-import { SaveDataObject, SkillBonuses } from "../helpers/Types";
+import {
+  EnchantedGloves,
+  SaveDataObject,
+  SkillBonuses,
+} from "../helpers/Types";
 
 interface Props {
   data: ApiData;
@@ -31,7 +36,30 @@ export default function Enhancing({
   const [toolBonus, setToolBonus] = useState<number | "">(0);
   const [teas, setTeas] = useState<string[]>([]);
   const [target, setTarget] = useState<number>(1);
-
+  const [enchantedGloves, setEnchantedGloves] = useState<EnchantedGloves>({
+    withEnchantedGloves: false,
+    enhancementLevel: 0,
+  });
+  const handleEnhancementLevelChange = (n: number) => {
+    setEnchantedGloves({ withEnchantedGloves: true, enhancementLevel: n });
+  };
+  const getEnchantedGlovesBonusWithEnhancement = (
+    enchantedGloves: EnchantedGloves
+  ): number => {
+    const enchantedGlovesItem =
+      data.itemDetails["/items/enchanted_gloves"].equipmentDetail;
+    const enchantedGlovesEfficiencyBonus =
+      enchantedGlovesItem.noncombatStats.enhancingSpeed;
+    const enhancementBonusTable =
+      data.enhancementLevelTotalBonusMultiplierTable;
+    const enchantedGlovesEfficiencyBonusWithEnhancement =
+      enchantedGlovesEfficiencyBonus +
+      enchantedGlovesEfficiencyBonus *
+        ((enhancementBonusTable[enchantedGloves.enhancementLevel] * 2) / 100);
+    return enchantedGloves.withEnchantedGloves
+      ? enchantedGlovesEfficiencyBonusWithEnhancement
+      : 0;
+  };
   const availableTeas = useMemo(
     () =>
       Object.values(data.itemDetails)
@@ -56,6 +84,12 @@ export default function Enhancing({
         setTeas(loadedSaveData.skills[value].bonuses.teas || []);
         setItem(loadedSaveData.skills[value].item?.item || null);
         setTarget(loadedSaveData.skills[value].item?.target || 1);
+        setEnchantedGloves(
+          loadedSaveData.skills[value].itemBonuses!.enchantedGloves ?? {
+            withEnchantedGloves: false,
+            enhancementLevel: 0,
+          }
+        );
       }
     });
   }, []);
@@ -67,8 +101,9 @@ export default function Enhancing({
         teas,
       },
       item: { item, target },
+      itemBonuses: { enchantedGloves },
     });
-  }, [level, toolBonus, teas, item, target]);
+  }, [level, toolBonus, teas, item, target, enchantedGloves]);
   const items = useMemo(
     () =>
       Object.values(data.itemDetails)
@@ -136,6 +171,26 @@ export default function Enhancing({
             error={teaError}
           />
         </Tooltip>
+        <Switch
+          onLabel="WITH ENCHANTED GLOVES"
+          offLabel="NO ENCHANTED GLOVES"
+          size="xl"
+          checked={enchantedGloves.withEnchantedGloves}
+          onChange={(event) =>
+            setEnchantedGloves({
+              withEnchantedGloves: event.currentTarget.checked,
+              enhancementLevel: 0,
+            })
+          }
+        />
+        {enchantedGloves.withEnchantedGloves && (
+          <NumberInput
+            value={enchantedGloves.enhancementLevel}
+            onChange={handleEnhancementLevelChange}
+            label="Enhancement Level"
+            hideControls
+          />
+        )}
       </Group>
       <Group>
         <Select
@@ -164,6 +219,10 @@ export default function Enhancing({
           toolPercent={toolBonus || 0}
           target={target}
           teas={teas}
+          itemBonus={{
+            enchantedGloves:
+              getEnchantedGlovesBonusWithEnhancement(enchantedGloves),
+          }}
         />
       )}
     </Flex>

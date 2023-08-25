@@ -36,46 +36,56 @@ export default function App() {
     switch (skill) {
       case "milking":
         saveDataObject["skills"].milking.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].milking.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
         return;
       case "foraging":
         saveDataObject["skills"].foraging.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].foraging.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "woodcutting":
         saveDataObject["skills"].woodcutting.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].woodcutting.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "cheesesmithing":
         saveDataObject["skills"].cheesesmithing.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].cheesesmithing.itemBonuses =
+          bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "crafting":
         saveDataObject["skills"].crafting.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].crafting.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "tailoring":
         saveDataObject["skills"].tailoring.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].tailoring.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "cooking":
         saveDataObject["skills"].cooking.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].cooking.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "brewing":
         saveDataObject["skills"].brewing.bonuses = bonuses.bonuses;
+        saveDataObject["skills"].brewing.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
 
         return;
       case "enhancing":
         saveDataObject["skills"].enhancing.bonuses = bonuses.bonuses;
         saveDataObject["skills"].enhancing.item = bonuses.item;
+        saveDataObject["skills"].enhancing.itemBonuses = bonuses.itemBonuses;
         localStorage.setItem("saveDataObject", JSON.stringify(saveDataObject));
         return;
     }
@@ -95,8 +105,6 @@ export default function App() {
   const loadedSaveData: SaveDataObject = JSON.parse(
     localStorage.getItem("saveDataObject") || saveDataString
   );
-  console.log(saveDataString);
-
   if (isLoading || !data) return <Loader />;
   return (
     <AppShell
