@@ -51,11 +51,10 @@ export default function EnhancingCalc({
   if (!item.enhancementCosts) return <Loader />;
   const actionTimer =
     (action.baseTimeCost / 1000000000) *
-      Math.min(1, 100 / (100 + level - item.itemLevel)) -
-    (action.baseTimeCost / 1000000000) *
-      Math.min(1, 100 / (100 + level - item.itemLevel)) *
-      itemBonus.enchantedGloves;
-
+    Math.min(
+      1,
+      100 / (100 + level - item.itemLevel + itemBonus.enchantedGloves * 100)
+    );
   const getApproxValue = (hrid: string): number => {
     if (hrid === "/items/coin") return 1;
 

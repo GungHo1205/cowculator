@@ -157,7 +157,6 @@ export default function CombatTable({ action, data, kph }: Props) {
 
   const getItemPrice = (item: MarketValue & ItemDetail): number => {
     if (item.hrid === "/items/coin") return 1;
-
     return priceOverrides[item.hrid] || Math.round((item.ask + item.bid) / 2);
   };
 
