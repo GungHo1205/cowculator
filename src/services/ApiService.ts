@@ -33,8 +33,11 @@ const getApiData = async (): Promise<ApiData> => {
   Object.entries(clientData.itemDetailMap).forEach(([key, value]) => {
     itemDetails[key] = {
       ...value,
-      ...(marketData?.market?.[value.name] ??
-        { ask: -1, bid: -1, vendor: value.sellPrice }),
+      ...(marketData?.market?.[value.name] ?? {
+        ask: -1,
+        bid: -1,
+        vendor: value.sellPrice,
+      }),
     };
   });
 
@@ -57,12 +60,14 @@ const getApiData = async (): Promise<ApiData> => {
   return result;
 };
 
-export const getMarketData = (useMedian = true) => {
-  return axios.get<MarketResponse>(
-    `https://raw.githubusercontent.com/holychikenz/MWIApi/main/${
-      useMedian ? "medianmarket" : "milkyapi"
-    }.json`,
-  ).then((x) => x.data);
+export const getMarketData = (useMedian = false) => {
+  return axios
+    .get<MarketResponse>(
+      `https://raw.githubusercontent.com/holychikenz/MWIApi/main/${
+        useMedian ? "medianmarket" : "milkyapi"
+      }.json`
+    )
+    .then((x) => x.data);
 };
 
 export default getApiData;
