@@ -23,8 +23,8 @@ export interface ApiData {
   skillDetails: { [key: string]: ActionCategoryDetailMap };
 }
 
-const getApiData = async (): Promise<ApiData> => {
-  const marketData = await getMarketData();
+const getApiData = async (marketMode: boolean): Promise<ApiData> => {
+  const marketData = await getMarketData(marketMode);
 
   const clientData = rawData as ClientResponse;
 
@@ -60,7 +60,7 @@ const getApiData = async (): Promise<ApiData> => {
   return result;
 };
 
-export const getMarketData = (useMedian = false) => {
+export const getMarketData = (useMedian: boolean) => {
   return axios
     .get<MarketResponse>(
       `https://raw.githubusercontent.com/holychikenz/MWIApi/main/${

@@ -12,7 +12,7 @@ import getApiData from "./services/ApiService";
 import { ActionType } from "./models/Client";
 import Market from "./components/Market";
 import ActionCategorySelector from "./components/ActionCategorySelector";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState } from "react";
 import { Skill } from "./helpers/CommonFunctions";
 import CombatLevel from "./components/CombatLevel";
 import { CombatData, SaveDataObject, SkillBonuses } from "./helpers/Types";
@@ -26,12 +26,18 @@ const Combat = lazy(() => import("./components/Combat"));
 const Character = lazy(() => import("./components/Character"));
 
 export default function App() {
+  const [marketMode, setMarketMode] = useState<boolean>(false);
+
   const { data, isLoading } = useQuery({
-    queryKey: ["apiData"],
-    queryFn: getApiData,
+    queryKey: ["apiData", marketMode],
+    queryFn: () => getApiData(marketMode),
     refetchInterval: 5 * 60 * 1000,
   });
-
+  const onMarketModeChange = (marketMode: "median" | "milky") => {
+    if (marketMode === "median") setMarketMode(true);
+    else setMarketMode(false);
+  };
+  console.log(data);
   const onSkillBonusesChange = (skill: Skill, bonuses: SkillBonuses) => {
     switch (skill) {
       case "milking":
@@ -276,7 +282,10 @@ export default function App() {
             </Tabs.Panel>
 
             <Tabs.Panel value="market" pt="xs">
-              <Market />
+              <Market
+                onMarketModeChange={onMarketModeChange}
+                marketMode={marketMode}
+              />
             </Tabs.Panel>
           </Tabs>
         </Suspense>

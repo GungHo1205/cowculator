@@ -1,16 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMarketData } from "../services/ApiService";
-import { Code, Flex, Loader, Space, Table, TextInput } from "@mantine/core";
+import {
+  Code,
+  Flex,
+  Loader,
+  Select,
+  Space,
+  Table,
+  TextInput,
+} from "@mantine/core";
 import { useMemo, useState } from "react";
-
-export default function Market() {
+interface Props {
+  onMarketModeChange: (marketMode: "median" | "milky") => void;
+  marketMode: boolean;
+}
+export default function Market({
+  onMarketModeChange,
+  marketMode = false,
+}: Props) {
   const [search, setSearch] = useState("");
+  // console.log(getMarketData(marketMode));
   const { data, isLoading } = useQuery({
-    queryKey: ["marketData"],
-    queryFn: () => getMarketData(false),
+    queryKey: ["marketData", marketMode],
+    queryFn: () => getMarketData(marketMode),
     refetchInterval: 30 * 60 * 1000,
   });
-
+  // console.log(data);
+  // console.log(data?.market);
   const items = useMemo(
     () =>
       data &&
@@ -48,6 +64,17 @@ export default function Market() {
           label="Search"
           value={search}
           onChange={(event) => setSearch(event.currentTarget.value)}
+        />
+        <Select
+          searchable
+          size="lg"
+          onChange={onMarketModeChange}
+          data={[
+            { value: "median", label: "median" },
+            { value: "milky", label: "milky" },
+          ]}
+          label="Select an item"
+          placeholder="Pick one"
         />
       </Flex>
       <Space h="md" />
