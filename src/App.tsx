@@ -26,7 +26,7 @@ const Combat = lazy(() => import("./components/Combat"));
 const Character = lazy(() => import("./components/Character"));
 
 export default function App() {
-  const [marketMode, setMarketMode] = useState<boolean>(false);
+  const [marketMode, setMarketMode] = useState<boolean>(true);
 
   const { data, isLoading } = useQuery({
     queryKey: ["apiData", marketMode],
@@ -37,7 +37,6 @@ export default function App() {
     if (marketMode === "median") setMarketMode(true);
     else setMarketMode(false);
   };
-  console.log(data);
   const onSkillBonusesChange = (skill: Skill, bonuses: SkillBonuses) => {
     switch (skill) {
       case "milking":

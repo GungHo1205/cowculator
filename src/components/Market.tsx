@@ -8,6 +8,8 @@ import {
   Space,
   Table,
   TextInput,
+  Title,
+  rem,
 } from "@mantine/core";
 import { useMemo, useState } from "react";
 interface Props {
@@ -19,14 +21,11 @@ export default function Market({
   marketMode = false,
 }: Props) {
   const [search, setSearch] = useState("");
-  // console.log(getMarketData(marketMode));
   const { data, isLoading } = useQuery({
     queryKey: ["marketData", marketMode],
     queryFn: () => getMarketData(marketMode),
     refetchInterval: 30 * 60 * 1000,
   });
-  // console.log(data);
-  // console.log(data?.market);
   const items = useMemo(
     () =>
       data &&
@@ -57,8 +56,23 @@ export default function Market({
     <>
       <div>
         Market Date: <Code>{new Date(data.time * 1000).toLocaleString()}</Code>
+        <Title
+          order={2}
+          style={{ fontSize: rem(34), fontWeight: 900 }}
+          ta="center"
+          mt="sm"
+        >
+          Choose between Median (24-hour median) and Milky (current market info
+          )
+        </Title>
       </div>
-      <Flex>
+      <Flex
+        justify="flex-start"
+        align="center"
+        direction="row"
+        wrap="wrap"
+        gap="xs"
+      >
         <TextInput
           placeholder="Holy Brush"
           label="Search"
@@ -70,13 +84,18 @@ export default function Market({
           size="lg"
           onChange={onMarketModeChange}
           data={[
-            { value: "median", label: "median" },
-            { value: "milky", label: "milky" },
+            {
+              value: "median",
+              label: "Median",
+            },
+            { value: "milky", label: "Milky" },
           ]}
-          label="Select an item"
+          defaultValue={"median"}
+          label="Select a market mode"
           placeholder="Pick one"
         />
       </Flex>
+
       <Space h="md" />
 
       <Flex
