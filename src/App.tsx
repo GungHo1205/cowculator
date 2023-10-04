@@ -26,7 +26,7 @@ const Combat = lazy(() => import("./components/Combat"));
 const Character = lazy(() => import("./components/Character"));
 
 export default function App() {
-  const [marketMode, setMarketMode] = useState<boolean>(true);
+  const [marketMode, setMarketMode] = useState<boolean>(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["apiData", marketMode],
