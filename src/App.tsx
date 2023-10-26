@@ -286,6 +286,12 @@ export default function App() {
                 marketMode={marketMode}
               />
             </Tabs.Panel>
+            {/* <Tabs.Panel value="houses" pt="xs">
+              <Market
+                onMarketModeChange={onMarketModeChange}
+                marketMode={marketMode}
+              />
+            </Tabs.Panel> */}
           </Tabs>
         </Suspense>
       </Container>

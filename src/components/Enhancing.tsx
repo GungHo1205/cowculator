@@ -40,6 +40,7 @@ export default function Enhancing({
     withEnchantedGloves: false,
     enhancementLevel: 0,
   });
+  const [laboratoryLevel, setLaboratoryLevel] = useState<number | "">(0);
   const handleEnhancementLevelChange = (n: number) => {
     setEnchantedGloves({ withEnchantedGloves: true, enhancementLevel: n });
   };
@@ -157,6 +158,13 @@ export default function Enhancing({
           precision={2}
           formatter={(value) => `${value}%`}
         />
+        <NumberInput
+          value={laboratoryLevel}
+          onChange={setLaboratoryLevel}
+          label="Laboratory Level"
+          hideControls
+          max={8}
+        />
         <Tooltip
           label="Tea costs are not yet included in cost calculations."
           withArrow
@@ -223,6 +231,7 @@ export default function Enhancing({
             enchantedGloves:
               getEnchantedGlovesBonusWithEnhancement(enchantedGloves),
           }}
+          laboratoryLevel={Math.max(0, Math.min(8, Number(laboratoryLevel)))}
         />
       )}
     </Flex>

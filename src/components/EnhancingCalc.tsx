@@ -15,6 +15,7 @@ interface Props {
   target: number;
   teas: string[];
   itemBonus: { enchantedGloves: number };
+  laboratoryLevel: number;
 }
 
 const FAIL_XP = 0.1;
@@ -28,10 +29,12 @@ export default function EnhancingCalc({
   target,
   teas,
   itemBonus,
+  laboratoryLevel,
 }: Props) {
   const toolBonus = toolPercent * 0.01;
   const action = data.actionDetails["/actions/enhancing/enhance"];
   const [protCostOverride, setProtCostOverride] = useState<number | "">("");
+  // const [protLevelOverride, setProtLevelOverride] = useState<number | "">("");
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});
@@ -53,7 +56,12 @@ export default function EnhancingCalc({
     (action.baseTimeCost / 1000000000) *
     Math.min(
       1,
-      100 / (100 + level - item.itemLevel + itemBonus.enchantedGloves * 100)
+      100 /
+        (100 +
+          level -
+          item.itemLevel +
+          itemBonus.enchantedGloves * 100 +
+          laboratoryLevel * 1.11)
     );
   const getApproxValue = (hrid: string): number => {
     if (hrid === "/items/coin") return 1;
@@ -84,12 +92,13 @@ export default function EnhancingCalc({
 
     return price;
   };
-
+  console.log(data);
   function X(N: number) {
     return (
       data.enhancementLevelSuccessRateTable[N] *
       (Math.min((level / item.itemLevel + 1) / 2, 1) +
         toolBonus +
+        (laboratoryLevel * 0.05) / 100 +
         0.0005 * Math.max(level - item.itemLevel, 0))
     );
   }
@@ -136,7 +145,7 @@ export default function EnhancingCalc({
       if (acc === -1 || cost < acc) return cost;
       return acc;
     }, -1);
-
+  const xCol = TARGET_COL.map((x) => X(x));
   const pCol = TARGET_COL.map((x) => (x === 0 ? 0 : X(x - 1)));
   const sCol = TARGET_COL.map((x) => S(x));
   const zCol = TARGET_COL.map((x) => Z(x));
@@ -433,6 +442,7 @@ export default function EnhancingCalc({
           <tr>
             <th>Target</th>
             <th>Mod Probability</th>
+            <th>X</th>
             <th>S(N)</th>
             <th>Z(N)</th>
             <th>T(N)</th>
@@ -450,6 +460,7 @@ export default function EnhancingCalc({
               <tr key={"enhancing/results/" + x}>
                 <td>{x}</td>
                 <td>{pCol[x].toFixed(5)}</td>
+                <td>{xCol[x]}</td>
                 <td>{sCol[x].toFixed(10)}</td>
                 <td>{zCol[x].toFixed(10)}</td>
                 <td>{tCol[x]}</td>
