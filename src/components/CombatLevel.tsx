@@ -31,7 +31,7 @@ export default function CombatLevel({
   const [level, setLevel] = useState<number | "">(1);
   const [xp, setXp] = useState<number | "">("");
   const [targetLevel, setTargetLevel] = useState<number | "">("");
-  const [withWisdomCoffee, setWithTea] = useState<boolean>(false);
+  const [withWisdomCoffee, setWithWisdomCoffee] = useState<boolean>(false);
   const [necklaceOfWisdom, setNecklaceOfWisdom] = useState<NecklaceOfWisdom>({
     withNecklaceOfWisdom: false,
     enhancementLevel: 0,
@@ -61,7 +61,7 @@ export default function CombatLevel({
       loadedSaveData.skills.combatLevel.bonuses?.targetLevel || ""
     );
 
-    setWithTea(
+    setWithWisdomCoffee(
       loadedSaveData.skills.combatLevel.bonuses?.withWisdomCoffee || false
     );
 
@@ -156,11 +156,13 @@ export default function CombatLevel({
             hideControls
           />
           <Switch
-            onLabel="WITH WISDOM COFEE"
+            onLabel="WITH WISDOM COFFEE"
             offLabel="NO WISDOM COFFEE"
             size="xl"
             checked={withWisdomCoffee}
-            onChange={(event) => setWithTea(event.currentTarget.checked)}
+            onChange={(event) =>
+              setWithWisdomCoffee(event.currentTarget.checked)
+            }
           />
           <Switch
             onLabel="WITH NECKLACE OF WISDOM"

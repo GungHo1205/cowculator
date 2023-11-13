@@ -92,7 +92,7 @@ export default function EnhancingCalc({
 
     return price;
   };
-  console.log(data);
+
   function X(N: number) {
     return (
       data.enhancementLevelSuccessRateTable[N] *

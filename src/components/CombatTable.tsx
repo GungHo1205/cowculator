@@ -23,9 +23,17 @@ interface Props {
   data: ApiData;
   action: string;
   kph: number;
+  withLuckyCoffee: boolean;
+  combatBuffLevel: number;
 }
 
-export default function CombatTable({ action, data, kph }: Props) {
+export default function CombatTable({
+  action,
+  data,
+  kph,
+  withLuckyCoffee,
+  combatBuffLevel,
+}: Props) {
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});
@@ -159,7 +167,17 @@ export default function CombatTable({ action, data, kph }: Props) {
     if (item.hrid === "/items/coin") return 1;
     return priceOverrides[item.hrid] || Math.round((item.ask + item.bid) / 2);
   };
-
+  const getDropRateWithCoffee = (dropRate: number) => {
+    let resultDropRate = dropRate;
+    if (dropRate < 1) {
+      resultDropRate = dropRate + dropRate * 0.15;
+    }
+    return resultDropRate;
+  };
+  const getDropsWithBuff = (avgDrop: number) => {
+    const result = avgDrop + avgDrop * (0.2 + (combatBuffLevel - 1) * 0.005);
+    return result;
+  };
   const lootMap = enemies
     .flatMap((x) => {
       const dropTable =
@@ -167,9 +185,15 @@ export default function CombatTable({ action, data, kph }: Props) {
 
       return dropTable.map((y) => {
         const item = data.itemDetails[y.itemHrid];
-
         const avgDrop = (y.minCount + y.maxCount) / 2;
-        const avgDropPerKill = y.dropRate * avgDrop;
+        const avgDropPerKill =
+          combatBuffLevel > 0
+            ? withLuckyCoffee
+              ? getDropRateWithCoffee(y.dropRate) * getDropsWithBuff(avgDrop)
+              : y.dropRate * getDropsWithBuff(avgDrop)
+            : withLuckyCoffee
+            ? getDropRateWithCoffee(y.dropRate) * avgDrop
+            : y.dropRate * avgDrop;
         const dropsPerHour = avgDropPerKill * kph * x.rate;
         const coinPerItem = getItemPrice(item);
         const coinPerHour = coinPerItem * dropsPerHour;
