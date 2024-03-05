@@ -72,12 +72,19 @@ export default function CombatLevelTable({
 
   const getMultipleEncounters = (kph: number): string[][] => {
     const encounterList = [];
+    const bossName: string[] = [];
+    bossName.push(
+      data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+        .combatMonsterHrid
+    );
+
     for (let i = 1; i < kph + 1; i++) {
-      if (i % 10 === 0 && i !== 0) {
-        encounterList.push(
-          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters ??
-            getRandomEncounter()
-        );
+      if (
+        i % 10 === 0 &&
+        i !== 0 &&
+        data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null
+      ) {
+        encounterList.push(bossName ?? getRandomEncounter());
       } else encounterList.push(getRandomEncounter());
     }
     return encounterList;

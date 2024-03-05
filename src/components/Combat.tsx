@@ -20,6 +20,7 @@ export default function Combat({
   const [kph, setKph] = useState<number>(0);
   const [withLuckyCoffee, setWithLuckyCoffee] = useState<boolean>(false);
   const [combatBuffLevel, setCombatBuffLevel] = useState<number | "">(0);
+  const [partyAmount, setPartyAmount] = useState<number | "">(1);
   const actions = Object.values(data.actionDetails)
     .filter((x) => x.function === ActionFunction.Combat)
     .sort((a, b) => {
@@ -81,6 +82,15 @@ export default function Combat({
           min={0}
           max={20}
         />
+        <NumberInput
+          value={partyAmount}
+          onChange={setPartyAmount}
+          label="Party amount"
+          withAsterisk
+          hideControls
+          min={1}
+          max={3}
+        />
         <Switch
           onLabel="WITH Lucky Coffee"
           offLabel="NO Lucky Coffee"
@@ -96,6 +106,7 @@ export default function Combat({
           kph={kph}
           withLuckyCoffee={withLuckyCoffee}
           combatBuffLevel={Math.max(0, Math.min(20, Number(combatBuffLevel)))}
+          partyAmount={Math.max(1, Math.min(3, Number(partyAmount)))}
         />
       )}
     </Flex>

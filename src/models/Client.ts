@@ -157,6 +157,7 @@ export interface DropTable {
   dropRate: number;
   minCount: number;
   maxCount: number;
+  isEliteOnly: boolean;
 }
 
 export interface ExperienceGain {
@@ -204,12 +205,13 @@ export interface MonsterSpawnInfo {
   maxSpawnCount: number;
   maxTotalStrength: number;
   spawns: Spawn[] | null;
-  bossFightMonsters: string[] | null;
+  bossSpawns: Spawn[] | null;
   battlesPerBoss: number;
 }
 
 export interface Spawn {
   combatMonsterHrid: string;
+  isElite: boolean;
   rate: number;
   strength: number;
 }

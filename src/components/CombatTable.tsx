@@ -25,6 +25,7 @@ interface Props {
   kph: number;
   withLuckyCoffee: boolean;
   combatBuffLevel: number;
+  partyAmount: number;
 }
 
 export default function CombatTable({
@@ -33,6 +34,7 @@ export default function CombatTable({
   kph,
   withLuckyCoffee,
   combatBuffLevel,
+  partyAmount,
 }: Props) {
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
@@ -75,12 +77,19 @@ export default function CombatTable({
   };
   const getMultipleEncounters = (kph: number): string[][] => {
     const encounterList = [];
+    const bossName: string[] = [];
+    bossName.push(
+      data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+        .combatMonsterHrid
+    );
+
     for (let i = 1; i < kph + 1; i++) {
-      if (i % 10 === 0 && i !== 0) {
-        encounterList.push(
-          data.actionDetails[action].monsterSpawnInfo.bossFightMonsters ??
-            getRandomEncounter()
-        );
+      if (
+        i % 10 === 0 &&
+        i !== 0 &&
+        data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null
+      ) {
+        encounterList.push(bossName ?? getRandomEncounter());
       } else encounterList.push(getRandomEncounter());
     }
     return encounterList;
@@ -106,10 +115,9 @@ export default function CombatTable({
       monsterNames.forEach((monsterName) => {
         if (monster.hrid === monsterName) {
           if (
-            data.actionDetails[action].monsterSpawnInfo.bossFightMonsters !==
-              null &&
-            data.actionDetails[action].monsterSpawnInfo
-              .bossFightMonsters![0] === monsterName &&
+            data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null &&
+            data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+              .combatMonsterHrid === monsterName &&
             kph % 10 !== 0
           ) {
             planetSpawnRate.push({
@@ -180,10 +188,18 @@ export default function CombatTable({
   };
   const lootMap = enemies
     .flatMap((x) => {
-      const dropTable =
-        data.combatMonsterDetails[x.combatMonsterHrid].dropTable;
+      const elite = data.actionDetails[action].hrid.includes("elite");
+      let dropTable;
+      if (elite) {
+        dropTable = data.combatMonsterDetails[x.combatMonsterHrid].dropTable;
+      } else {
+        dropTable = data.combatMonsterDetails[
+          x.combatMonsterHrid
+        ].dropTable.filter((drop) => drop.isEliteOnly === false);
+      }
 
       return dropTable.map((y) => {
+        console.log(partyAmount);
         const item = data.itemDetails[y.itemHrid];
         const avgDrop = (y.minCount + y.maxCount) / 2;
         const avgDropPerKill =
@@ -194,10 +210,9 @@ export default function CombatTable({
             : withLuckyCoffee
             ? getDropRateWithCoffee(y.dropRate) * avgDrop
             : y.dropRate * avgDrop;
-        const dropsPerHour = avgDropPerKill * kph * x.rate;
+        const dropsPerHour = (avgDropPerKill * kph * x.rate) / partyAmount;
         const coinPerItem = getItemPrice(item);
         const coinPerHour = coinPerItem * dropsPerHour;
-
         return {
           itemHrid: item.hrid,
           itemName: item.name,
