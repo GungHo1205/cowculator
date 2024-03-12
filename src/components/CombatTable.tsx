@@ -78,10 +78,12 @@ export default function CombatTable({
   const getMultipleEncounters = (kph: number): string[][] => {
     const encounterList = [];
     const bossName: string[] = [];
-    bossName.push(
-      data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
-        .combatMonsterHrid
-    );
+    if (data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null) {
+      bossName.push(
+        data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+          .combatMonsterHrid
+      );
+    }
 
     for (let i = 1; i < kph + 1; i++) {
       if (
@@ -182,7 +184,25 @@ export default function CombatTable({
     }
     return resultDropRate;
   };
-  const getDropsWithBuff = (avgDrop: number) => {
+  const getDropRateWithFlatBoost = (dropRate: number, boost: number) => {
+    let resultDropRate = dropRate;
+    if (dropRate < 1) {
+      resultDropRate = dropRate + dropRate * boost;
+    }
+    return resultDropRate;
+  };
+  const getDropRateWithFlatBoostAndCoffee = (
+    dropRate: number,
+    boost: number
+  ) => {
+    let resultDropRate = dropRate;
+    const totalBoost = boost + 0.15;
+    if (dropRate < 1) {
+      resultDropRate = dropRate + dropRate * totalBoost;
+    }
+    return resultDropRate;
+  };
+  const getDropsWithCombatBuff = (avgDrop: number) => {
     const result = avgDrop + avgDrop * (0.2 + (combatBuffLevel - 1) * 0.005);
     return result;
   };
@@ -199,17 +219,56 @@ export default function CombatTable({
       }
 
       return dropTable.map((y) => {
-        console.log(partyAmount);
+        const elite = data.actionDetails[action].hrid.includes("elite");
         const item = data.itemDetails[y.itemHrid];
         const avgDrop = (y.minCount + y.maxCount) / 2;
-        const avgDropPerKill =
-          combatBuffLevel > 0
-            ? withLuckyCoffee
-              ? getDropRateWithCoffee(y.dropRate) * getDropsWithBuff(avgDrop)
-              : y.dropRate * getDropsWithBuff(avgDrop)
-            : withLuckyCoffee
-            ? getDropRateWithCoffee(y.dropRate) * avgDrop
-            : y.dropRate * avgDrop;
+        let eliteZoneFlatBoost = 0;
+        if (elite) {
+          if (data.actionDetails[action].buffs !== null) {
+            eliteZoneFlatBoost = data.actionDetails[action].buffs![0].flatBoost;
+          }
+        }
+        let avgDropPerKill: number;
+        if (combatBuffLevel > 0) {
+          if (withLuckyCoffee) {
+            if (elite) {
+              avgDropPerKill =
+                getDropsWithCombatBuff(avgDrop) *
+                getDropRateWithFlatBoostAndCoffee(
+                  y.dropRate,
+                  eliteZoneFlatBoost
+                );
+            } else {
+              avgDropPerKill =
+                getDropRateWithCoffee(y.dropRate) *
+                getDropsWithCombatBuff(avgDrop);
+            }
+          } else {
+            if (elite) {
+              avgDropPerKill =
+                getDropRateWithFlatBoost(y.dropRate, eliteZoneFlatBoost) *
+                getDropsWithCombatBuff(avgDrop);
+            } else {
+              avgDropPerKill = y.dropRate * getDropsWithCombatBuff(avgDrop);
+            }
+          }
+        } else if (withLuckyCoffee) {
+          if (elite) {
+            avgDropPerKill =
+              getDropRateWithFlatBoostAndCoffee(
+                y.dropRate,
+                eliteZoneFlatBoost
+              ) * avgDrop;
+          } else {
+            avgDropPerKill = getDropRateWithCoffee(y.dropRate) * avgDrop;
+          }
+        } else if (elite) {
+          avgDropPerKill =
+            getDropRateWithFlatBoost(y.dropRate, eliteZoneFlatBoost) * avgDrop;
+        } else {
+          avgDropPerKill = y.dropRate * avgDrop;
+        }
+
         const dropsPerHour = (avgDropPerKill * kph * x.rate) / partyAmount;
         const coinPerItem = getItemPrice(item);
         const coinPerHour = coinPerItem * dropsPerHour;

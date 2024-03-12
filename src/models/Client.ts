@@ -151,8 +151,18 @@ export interface ActionDetailMap {
   outputItems: Cost[] | null;
   monsterSpawnInfo: MonsterSpawnInfo;
   sortIndex: number;
+  buffs: Buffs[] | null;
 }
-
+export interface Buffs {
+  uniqueHrid: string;
+  typeHrid: string;
+  ratioBoost: number;
+  ratioBoostLevelBonus: number;
+  flatBoost: number;
+  flatBoostLevelBonus: number;
+  startTime: string;
+  duration: number;
+}
 export interface DropTable {
   itemHrid: string;
   dropRate: number;
