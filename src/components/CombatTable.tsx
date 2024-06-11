@@ -42,7 +42,9 @@ export default function CombatTable({
   const [fromRaw, setFromRaw] = useState(false);
 
   const getRandomEncounter = () => {
-    const spawns = data.actionDetails[action].monsterSpawnInfo.spawns ?? [];
+    const spawns =
+      data.actionDetails[action].combatZoneInfo.fightInfo.randomSpawnInfo
+        .spawns ?? [];
     const totalWeight = spawns.reduce((prev, cur) => prev + cur.rate, 0);
 
     const encounterHrids = [];
@@ -50,7 +52,9 @@ export default function CombatTable({
 
     outer: for (
       let i = 0;
-      i < data.actionDetails[action].monsterSpawnInfo.maxSpawnCount;
+      i <
+      data.actionDetails[action].combatZoneInfo.fightInfo.randomSpawnInfo
+        .maxSpawnCount;
       i++
     ) {
       const randomWeight = totalWeight * Math.random();
@@ -63,7 +67,8 @@ export default function CombatTable({
 
           if (
             totalStrength <=
-            data.actionDetails[action].monsterSpawnInfo.maxTotalStrength
+            data.actionDetails[action].combatZoneInfo.fightInfo.randomSpawnInfo
+              .maxTotalStrength
           ) {
             encounterHrids.push(spawn.combatMonsterHrid);
           } else {
@@ -73,14 +78,22 @@ export default function CombatTable({
         }
       }
     }
+    console.log(data.actionDetails[action].combatZoneInfo.fightInfo);
+    console.log(
+      data.actionDetails[action].combatZoneInfo.fightInfo.randomSpawnInfo
+        .maxSpawnCount
+    );
+    console.log(encounterHrids);
     return encounterHrids;
   };
   const getMultipleEncounters = (kph: number): string[][] => {
     const encounterList = [];
     const bossName: string[] = [];
-    if (data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null) {
+    if (
+      data.actionDetails[action].combatZoneInfo.fightInfo.bossSpawns !== null
+    ) {
       bossName.push(
-        data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+        data.actionDetails[action].combatZoneInfo.fightInfo.bossSpawns![0]
           .combatMonsterHrid
       );
     }
@@ -89,7 +102,7 @@ export default function CombatTable({
       if (
         i % 10 === 0 &&
         i !== 0 &&
-        data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null
+        data.actionDetails[action].combatZoneInfo.fightInfo.bossSpawns !== null
       ) {
         encounterList.push(bossName ?? getRandomEncounter());
       } else encounterList.push(getRandomEncounter());
@@ -117,8 +130,9 @@ export default function CombatTable({
       monsterNames.forEach((monsterName) => {
         if (monster.hrid === monsterName) {
           if (
-            data.actionDetails[action].monsterSpawnInfo.bossSpawns !== null &&
-            data.actionDetails[action].monsterSpawnInfo.bossSpawns![0]
+            data.actionDetails[action].combatZoneInfo.fightInfo.bossSpawns !==
+              null &&
+            data.actionDetails[action].combatZoneInfo.fightInfo.bossSpawns![0]
               .combatMonsterHrid === monsterName &&
             kph % 10 !== 0
           ) {
@@ -215,7 +229,7 @@ export default function CombatTable({
       } else {
         dropTable = data.combatMonsterDetails[
           x.combatMonsterHrid
-        ].dropTable.filter((drop) => drop.isEliteOnly === false);
+        ].dropTable.filter((drop) => drop.minEliteTier < 1);
       }
 
       return dropTable.map((y) => {

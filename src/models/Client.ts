@@ -149,7 +149,7 @@ export interface ActionDetailMap {
   upgradeItemHrid: string;
   inputItems: Cost[] | null;
   outputItems: Cost[] | null;
-  monsterSpawnInfo: MonsterSpawnInfo;
+  combatZoneInfo: CombatZoneInfo;
   sortIndex: number;
   buffs: Buffs[] | null;
 }
@@ -168,7 +168,7 @@ export interface DropTable {
   dropRate: number;
   minCount: number;
   maxCount: number;
-  isEliteOnly: boolean;
+  minEliteTier: number;
 }
 
 export interface ExperienceGain {
@@ -211,18 +211,28 @@ export interface LevelRequirement {
   skillHrid: SkillHrid;
   level: number;
 }
-
-export interface MonsterSpawnInfo {
-  maxSpawnCount: number;
-  maxTotalStrength: number;
-  spawns: Spawn[] | null;
+export interface CombatZoneInfo {
+  isDungeon: boolean;
+  fightInfo: FightInfo;
+  dungeonInfo: DungeonInfo;
+}
+export interface FightInfo {
+  randomSpawnInfo: RandomSpawnInfo;
   bossSpawns: Spawn[] | null;
   battlesPerBoss: number;
 }
-
+export interface RandomSpawnInfo {
+  maxSpawnCount: number;
+  maxTotalStrength: number;
+  spawns: Spawn[] | null;
+}
+export interface DungeonInfo {
+  keyItemHrid: string;
+  rewardDropTable: DropTable[];
+}
 export interface Spawn {
   combatMonsterHrid: string;
-  isElite: boolean;
+  eliteTier: number;
   rate: number;
   strength: number;
 }
