@@ -78,12 +78,6 @@ export default function CombatTable({
         }
       }
     }
-    console.log(data.actionDetails[action].combatZoneInfo!.fightInfo);
-    console.log(
-      data.actionDetails[action].combatZoneInfo!.fightInfo.randomSpawnInfo
-        .maxSpawnCount
-    );
-    console.log(encounterHrids);
     return encounterHrids;
   };
   const getMultipleEncounters = (kph: number): string[][] => {
