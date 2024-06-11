@@ -14,7 +14,6 @@ import Market from "./components/Market";
 import ActionCategorySelector from "./components/ActionCategorySelector";
 import { Suspense, lazy, useState } from "react";
 import { Skill } from "./helpers/CommonFunctions";
-import CombatLevel from "./components/CombatLevel";
 import { CombatData, SaveDataObject, SkillBonuses } from "./helpers/Types";
 import { saveDataObject, saveDataString } from "./helpers/Constants";
 
@@ -272,13 +271,13 @@ export default function App() {
                 onCombatSkillChange={onCombatSkillChange}
               />
             </Tabs.Panel>
-            <Tabs.Panel value="combatLevel" pt="xs">
+            {/* <Tabs.Panel value="combatLevel" pt="xs">
               <CombatLevel
                 data={data}
                 loadedSaveData={loadedSaveData}
                 onCombatSkillChange={onCombatSkillChange}
               />
-            </Tabs.Panel>
+            </Tabs.Panel> */}
 
             <Tabs.Panel value="market" pt="xs">
               <Market

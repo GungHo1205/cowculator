@@ -149,7 +149,7 @@ export interface ActionDetailMap {
   upgradeItemHrid: string;
   inputItems: Cost[] | null;
   outputItems: Cost[] | null;
-  combatZoneInfo: CombatZoneInfo;
+  combatZoneInfo: CombatZoneInfo | null;
   sortIndex: number;
   buffs: Buffs[] | null;
 }
@@ -228,7 +228,7 @@ export interface RandomSpawnInfo {
 }
 export interface DungeonInfo {
   keyItemHrid: string;
-  rewardDropTable: DropTable[];
+  rewardDropTable: DropTable[] | null;
 }
 export interface Spawn {
   combatMonsterHrid: string;
@@ -289,8 +289,10 @@ export interface CombatMonsterDetailMap {
   hrid: string;
   name: string;
   combatDetails: CombatDetails;
+  elite1CombatDetails: CombatDetails;
+  elite2CombatDetails: CombatDetails;
   abilities: Ability[];
-  dropTable: DropTable[];
+  dropTable: DropTable[] | null;
   rareDropTable: DropTable[];
 }
 
