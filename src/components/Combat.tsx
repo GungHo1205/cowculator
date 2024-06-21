@@ -33,6 +33,10 @@ export default function Combat({
       label: x.name,
     }));
   useEffect(() => {
+    // console.log(loadedSaveData.skills.combatLoot.data.zone); // toggle if new people are allowed
+    // loadedSaveData.skills.combatLoot.data.zone === ""
+    //   ? setAction("/actions/combat/fly")
+    //   : setAction(loadedSaveData.skills.combatLoot.data.zone);
     setAction(loadedSaveData.skills.combatLoot.data.zone);
     setKph(loadedSaveData.skills.combatLoot.data.encountersHr);
   }, []);
@@ -68,6 +72,7 @@ export default function Combat({
           data={actions}
           label="Select a zone"
           placeholder="Pick one"
+          defaultValue={"/actions/combat/fly"}
         />
         <NumberInput
           value={kph}

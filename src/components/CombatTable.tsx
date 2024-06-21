@@ -21,6 +21,8 @@ type OpenableLootDropData = {
   coinPerItem: number;
   coinPerChest: number;
   totalCoins: number;
+  itemAsk: number;
+  itemBid: number;
 };
 
 type LootData = {
@@ -29,6 +31,8 @@ type LootData = {
   dropsPerHour: number;
   coinPerItem: number;
   coinPerHour: number;
+  itemAsk: number;
+  itemBid: number;
 };
 
 interface Props {
@@ -197,7 +201,20 @@ export default function CombatTable({
 
   const getItemPrice = (item: MarketValue & ItemDetail): number => {
     if (item.hrid === "/items/coin") return 1;
-    return priceOverrides[item.hrid] || Math.round((item.ask + item.bid) / 2);
+    return (
+      priceOverrides[item.hrid] ||
+      Math.round(
+        ((item.ask < 1 ? 0 : item.ask) + (item.bid < 1 ? 0 : item.bid)) / 2
+      )
+    );
+  };
+  const getItemAsk = (item: MarketValue & ItemDetail): number => {
+    if (item.hrid === "/items/coin") return 1;
+    return priceOverrides[item.hrid] || item.ask;
+  };
+  const getItemBid = (item: MarketValue & ItemDetail): number => {
+    if (item.hrid === "/items/coin") return 1;
+    return priceOverrides[item.hrid] || item.bid;
   };
   const getDropRateWithCoffee = (dropRate: number) => {
     let resultDropRate = dropRate;
@@ -238,20 +255,77 @@ export default function CombatTable({
       return "/items/enchanted_chest";
     }
   };
+  const getTreasureChestValue = (amount: number) => {
+    const treasureChestDropMapData =
+      data.openableLootDropMap["/items/large_treasure_chest"];
+    const treasureChestLootTable: OpenableLootDropData[] = [];
+    for (const loot of treasureChestDropMapData as OpenableLootDropMap[]) {
+      const avgDrop = (loot.minCount + loot.maxCount) / 2;
+      const item = data.itemDetails[loot.itemHrid];
+      const avgDropPerChest = avgDrop * loot.dropRate;
+      const coinPerItem = getItemPrice(item);
+      const itemAsk = getItemAsk(item);
+      const itemBid = getItemBid(item);
+      const coinPerChest = coinPerItem * avgDropPerChest;
+      const totalCoin = coinPerItem * avgDropPerChest * amount;
+
+      treasureChestLootTable.push({
+        itemHrid: item.hrid,
+        itemName: item.name,
+        dropsPerChest: avgDropPerChest,
+        coinPerItem: coinPerItem,
+        coinPerChest: coinPerChest,
+        totalCoins: totalCoin,
+        itemAsk: itemAsk,
+        itemBid: itemBid,
+      } as OpenableLootDropData);
+    }
+    const treasureChestLootMap = treasureChestLootTable.reduce((acc, val) => {
+      const temp = acc.get(val.itemHrid);
+      if (temp) {
+        acc.set(val.itemHrid, {
+          itemHrid: val.itemHrid,
+          itemName: val.itemName,
+          dropsPerChest: val.dropsPerChest + temp.dropsPerChest,
+          coinPerItem: val.coinPerItem,
+          coinPerChest: val.coinPerChest + temp.coinPerChest,
+          totalCoins: val.totalCoins + temp.totalCoins,
+          itemAsk: val.itemAsk,
+          itemBid: val.itemBid,
+        });
+      } else {
+        acc.set(val.itemHrid, {
+          itemHrid: val.itemHrid,
+          itemName: val.itemName,
+          dropsPerChest: val.dropsPerChest,
+          coinPerItem: val.coinPerItem,
+          coinPerChest: val.coinPerChest,
+          totalCoins: val.totalCoins,
+          itemAsk: val.itemAsk,
+          itemBid: val.itemBid,
+        });
+      }
+      return acc;
+    }, new Map<string, OpenableLootDropData>());
+    const treasureChestLootData = Array.from(treasureChestLootMap.values());
+    return treasureChestLootData.reduce((acc, val) => acc + val.totalCoins, 0);
+  };
   const activeChest = actionToChestMap(action);
   const openableLootDropMapData = activeChest
     ? data.openableLootDropMap[activeChest]
     : [];
-  console.log(data.openableLootDropMap);
   const openableLootTable: OpenableLootDropData[] = [];
   for (const loot of openableLootDropMapData as OpenableLootDropMap[]) {
     const avgDrop = (loot.minCount + loot.maxCount) / 2;
     const item = data.itemDetails[loot.itemHrid];
     const avgDropPerChest = avgDrop * loot.dropRate;
-    let coinPerItem = getItemPrice(item);
-    if (coinPerItem < 1) {
-      coinPerItem = 0;
-    }
+    const coinPerItem =
+      loot.itemHrid === "/items/large_treasure_chest"
+        ? getTreasureChestValue(avgDropPerChest)
+        : getItemPrice(item);
+    const itemAsk = getItemAsk(item);
+    const itemBid = getItemBid(item);
+
     const coinPerChest = coinPerItem * avgDropPerChest;
     const coinPerChestWithKph = coinPerItem * avgDropPerChest * kph;
     openableLootTable.push({
@@ -261,8 +335,11 @@ export default function CombatTable({
       coinPerItem: coinPerItem,
       coinPerChest: coinPerChest,
       totalCoins: coinPerChestWithKph,
+      itemAsk: itemAsk,
+      itemBid: itemBid,
     } as OpenableLootDropData);
   }
+
   const openableLootMap = openableLootTable.reduce((acc, val) => {
     const temp = acc.get(val.itemHrid);
     if (temp) {
@@ -273,6 +350,8 @@ export default function CombatTable({
         coinPerItem: val.coinPerItem,
         coinPerChest: val.coinPerChest + temp.coinPerChest,
         totalCoins: val.totalCoins + temp.totalCoins,
+        itemAsk: val.itemAsk,
+        itemBid: val.itemBid,
       });
     } else {
       acc.set(val.itemHrid, {
@@ -282,6 +361,8 @@ export default function CombatTable({
         coinPerItem: val.coinPerItem,
         coinPerChest: val.coinPerChest,
         totalCoins: val.totalCoins,
+        itemAsk: val.itemAsk,
+        itemBid: val.itemBid,
       });
     }
     return acc;
@@ -352,12 +433,16 @@ export default function CombatTable({
         const dropsPerHour = (avgDropPerKill * kph * x.rate) / partyAmount;
         const coinPerItem = getItemPrice(item);
         const coinPerHour = coinPerItem * dropsPerHour;
+        const itemAsk = getItemAsk(item);
+        const itemBid = getItemBid(item);
         return {
           itemHrid: item.hrid,
           itemName: item.name,
           dropsPerHour,
           coinPerItem,
           coinPerHour,
+          itemAsk: itemAsk,
+          itemBid: itemBid,
         } as LootData;
       });
     })
@@ -370,6 +455,8 @@ export default function CombatTable({
           dropsPerHour: val.dropsPerHour + temp.dropsPerHour,
           coinPerItem: val.coinPerItem,
           coinPerHour: val.coinPerHour + temp.coinPerHour,
+          itemAsk: val.itemAsk,
+          itemBid: val.itemBid,
         });
       } else {
         acc.set(val.itemHrid, {
@@ -378,6 +465,8 @@ export default function CombatTable({
           dropsPerHour: val.dropsPerHour,
           coinPerItem: val.coinPerItem,
           coinPerHour: val.coinPerHour,
+          itemAsk: val.itemAsk,
+          itemBid: val.itemBid,
         });
       }
 
@@ -403,7 +492,7 @@ export default function CombatTable({
           <NumberInput
             hideControls
             value={priceOverrides[x.itemHrid]}
-            placeholder={x.coinPerItem.toString()}
+            placeholder={x.itemAsk.toString() + " / " + x.itemBid.toString()}
             disabled={x.itemHrid === "/items/coin"}
             onChange={(y) =>
               setPriceOverrides({
@@ -443,7 +532,7 @@ export default function CombatTable({
           <NumberInput
             hideControls
             value={priceOverrides[x.itemHrid]}
-            placeholder={x.coinPerItem.toString()}
+            placeholder={x.itemAsk.toString() + " / " + x.itemBid.toString()}
             disabled={x.itemHrid === "/items/coin"}
             onChange={(y) =>
               setPriceOverrides({
