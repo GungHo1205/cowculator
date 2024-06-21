@@ -5,6 +5,7 @@ import {
   ClientResponse,
   CombatMonsterDetailMap,
   ItemDetail,
+  OpenableLootDropMap,
 } from "../models/Client";
 import { MarketResponse, MarketValue } from "../models/Market";
 import rawData from "../assets/init_client_info.json";
@@ -21,6 +22,7 @@ export interface ApiData {
   enhancementLevelSuccessRateTable: number[];
   enhancementLevelTotalBonusMultiplierTable: number[];
   skillDetails: { [key: string]: ActionCategoryDetailMap };
+  openableLootDropMap: { [key: string]: OpenableLootDropMap[] };
 }
 
 const getApiData = async (marketMode: boolean): Promise<ApiData> => {
@@ -55,6 +57,7 @@ const getApiData = async (marketMode: boolean): Promise<ApiData> => {
     enhancementLevelTotalBonusMultiplierTable:
       clientData.enhancementLevelTotalBonusMultiplierTable,
     skillDetails: clientData.skillDetailMap,
+    openableLootDropMap: clientData.openableLootDropMap,
   };
 
   return result;

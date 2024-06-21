@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { getFriendlyIntString } from "../helpers/Formatting";
-import { ItemDetail } from "../models/Client";
+import {
+  getFriendlyIntString,
+  getFriendlyIntStringRate,
+} from "../helpers/Formatting";
+import { ItemDetail, OpenableLootDropMap } from "../models/Client";
 import { MarketValue } from "../models/Market";
 import { ApiData } from "../services/ApiService";
 import { Flex, NumberInput, Switch, Table } from "@mantine/core";
@@ -10,6 +13,15 @@ type Enemies = {
   combatMonsterHrid: string;
   rate: number;
 }[];
+
+type OpenableLootDropData = {
+  itemHrid: string;
+  itemName: string;
+  dropsPerChest: number;
+  coinPerItem: number;
+  coinPerChest: number;
+  totalCoins: number;
+};
 
 type LootData = {
   itemHrid: string;
@@ -26,6 +38,7 @@ interface Props {
   withLuckyCoffee: boolean;
   combatBuffLevel: number;
   partyAmount: number;
+  dungeon: boolean;
 }
 
 export default function CombatTable({
@@ -35,6 +48,7 @@ export default function CombatTable({
   withLuckyCoffee,
   combatBuffLevel,
   partyAmount,
+  dungeon,
 }: Props) {
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
@@ -214,6 +228,64 @@ export default function CombatTable({
     const result = avgDrop + avgDrop * (0.2 + (combatBuffLevel - 1) * 0.005);
     return result;
   };
+
+  const actionToChestMap = (action: string) => {
+    if (action === "/actions/combat/chimerical_den") {
+      return "/items/chimerical_chest";
+    } else if (action === "/actions/combat/sinister_circus") {
+      return "/items/sinister_chest";
+    } else if (action === "/actions/combat/enchanted_fortress") {
+      return "/items/enchanted_chest";
+    }
+  };
+  const activeChest = actionToChestMap(action);
+  const openableLootDropMapData = activeChest
+    ? data.openableLootDropMap[activeChest]
+    : [];
+  console.log(data.openableLootDropMap);
+  const openableLootTable: OpenableLootDropData[] = [];
+  for (const loot of openableLootDropMapData as OpenableLootDropMap[]) {
+    const avgDrop = (loot.minCount + loot.maxCount) / 2;
+    const item = data.itemDetails[loot.itemHrid];
+    const avgDropPerChest = avgDrop * loot.dropRate;
+    let coinPerItem = getItemPrice(item);
+    if (coinPerItem < 1) {
+      coinPerItem = 0;
+    }
+    const coinPerChest = coinPerItem * avgDropPerChest;
+    const coinPerChestWithKph = coinPerItem * avgDropPerChest * kph;
+    openableLootTable.push({
+      itemHrid: item.hrid,
+      itemName: item.name,
+      dropsPerChest: avgDropPerChest,
+      coinPerItem: coinPerItem,
+      coinPerChest: coinPerChest,
+      totalCoins: coinPerChestWithKph,
+    } as OpenableLootDropData);
+  }
+  const openableLootMap = openableLootTable.reduce((acc, val) => {
+    const temp = acc.get(val.itemHrid);
+    if (temp) {
+      acc.set(val.itemHrid, {
+        itemHrid: val.itemHrid,
+        itemName: val.itemName,
+        dropsPerChest: val.dropsPerChest + temp.dropsPerChest,
+        coinPerItem: val.coinPerItem,
+        coinPerChest: val.coinPerChest + temp.coinPerChest,
+        totalCoins: val.totalCoins + temp.totalCoins,
+      });
+    } else {
+      acc.set(val.itemHrid, {
+        itemHrid: val.itemHrid,
+        itemName: val.itemName,
+        dropsPerChest: val.dropsPerChest,
+        coinPerItem: val.coinPerItem,
+        coinPerChest: val.coinPerChest,
+        totalCoins: val.totalCoins,
+      });
+    }
+    return acc;
+  }, new Map<string, OpenableLootDropData>());
   const lootMap = enemies
     .flatMap((x) => {
       const elite = data.actionDetails[action].hrid.includes("elite");
@@ -311,7 +383,41 @@ export default function CombatTable({
 
       return acc;
     }, new Map<string, LootData>());
-
+  const openableLootData = Array.from(openableLootMap.values());
+  const openableLootRows = openableLootData.map((x, i) => {
+    return (
+      <tr key={`${action}/loot/${i}/${x.itemHrid}`}>
+        <td>
+          <Flex
+            justify="flex-start"
+            align="center"
+            direction="row"
+            wrap="wrap"
+            gap="xs"
+          >
+            <Icon hrid={x.itemHrid} /> {x.itemName}
+          </Flex>
+        </td>
+        <td>{getFriendlyIntStringRate(x.dropsPerChest)}</td>
+        <td>
+          <NumberInput
+            hideControls
+            value={priceOverrides[x.itemHrid]}
+            placeholder={x.coinPerItem.toString()}
+            disabled={x.itemHrid === "/items/coin"}
+            onChange={(y) =>
+              setPriceOverrides({
+                ...priceOverrides,
+                [x.itemHrid]: y,
+              })
+            }
+          />
+        </td>
+        <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest)}</td>
+        <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest * kph)}</td>
+      </tr>
+    );
+  });
   const lootData = Array.from(lootMap.values());
   const lootRows = lootData.map((x, i) => {
     return (
@@ -355,11 +461,16 @@ export default function CombatTable({
     );
   });
 
-  const totalCoinsPerHour = lootData.reduce(
-    (acc, val) => acc + val.coinPerHour,
-    0
-  );
-
+  const totalCoins = (dungeon: boolean) => {
+    if (dungeon) {
+      return openableLootData.reduce((acc, val) => acc + val.totalCoins, 0);
+    } else {
+      return lootData.reduce((acc, val) => acc + val.coinPerHour, 0);
+    }
+  };
+  const totalCoinsPerChest = () => {
+    return openableLootData.reduce((acc, val) => acc + val.coinPerChest, 0);
+  };
   return (
     <>
       <Flex
@@ -374,50 +485,72 @@ export default function CombatTable({
             <thead>
               <tr>
                 <th>Loot</th>
-                <th>{fromRaw ? "Rate/day" : "Rate/hr"}</th>
+                {dungeon ? (
+                  <th>Rate/Chest</th>
+                ) : (
+                  <th>{fromRaw ? "Rate/day" : "Rate/hr"}</th>
+                )}
                 <th>Price/item</th>
-                <th>{fromRaw ? "Coin/day" : "Coin/hr"}</th>
-                <th></th>
+                {dungeon ? (
+                  <th>Coins/Chest</th>
+                ) : (
+                  <th>{fromRaw ? "Coin/day" : "Coin/hr"}</th>
+                )}
+                {dungeon ? <th>Total Coins</th> : <></>}
+
+                {dungeon ? <></> : <th></th>}
               </tr>
             </thead>
             <tbody>
-              {lootRows}
+              {dungeon ? openableLootRows : lootRows}
               <tr>
                 <th colSpan={3}>Total</th>
+
                 <td>
-                  {getFriendlyIntString(
-                    fromRaw ? totalCoinsPerHour * 24 : totalCoinsPerHour
-                  )}
+                  {dungeon
+                    ? getFriendlyIntString(totalCoinsPerChest())
+                    : getFriendlyIntString(
+                        fromRaw ? totalCoins(dungeon) * 24 : totalCoins(dungeon)
+                      )}
                 </td>
-                <td>
-                  {" "}
-                  <Switch
-                    onLabel="DAY"
-                    offLabel="HOUR"
-                    label="Per hour or day"
-                    size="xl"
-                    checked={fromRaw}
-                    onChange={(event) =>
-                      setFromRaw(event.currentTarget.checked)
-                    }
-                  />
-                </td>
+
+                {dungeon ? (
+                  <td>{getFriendlyIntString(totalCoins(dungeon))}</td>
+                ) : (
+                  <td>
+                    {" "}
+                    <Switch
+                      onLabel="DAY"
+                      offLabel="HOUR"
+                      label="Per hour or day"
+                      size="xl"
+                      checked={fromRaw}
+                      onChange={(event) =>
+                        setFromRaw(event.currentTarget.checked)
+                      }
+                    />
+                  </td>
+                )}
               </tr>
             </tbody>
           </Table>
         </Flex>
       </Flex>
-      <Flex>
-        <Table striped highlightOnHover withBorder withColumnBorders>
-          <thead>
-            <tr>
-              <th>Monster</th>
-              <th>Encounter Rate</th>
-            </tr>
-          </thead>
-          <tbody>{encounterRows}</tbody>
-        </Table>
-      </Flex>
+      {dungeon ? (
+        <></>
+      ) : (
+        <Flex>
+          <Table striped highlightOnHover withBorder withColumnBorders>
+            <thead>
+              <tr>
+                <th>Monster</th>
+                <th>Encounter Rate</th>
+              </tr>
+            </thead>
+            <tbody>{encounterRows}</tbody>
+          </Table>
+        </Flex>
+      )}
     </>
   );
 }

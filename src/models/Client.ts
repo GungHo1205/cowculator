@@ -27,6 +27,7 @@ export interface ClientResponse {
   buyableUpgradeDetailMap: { [key: string]: BuyableUpgradeDetailMap };
   chatIconDetailMap: { [key: string]: ChatIconDetailMap };
   communityBuffTypeDetailMap: CommunityBuffTypeDetailMap;
+  openableLootDropMap: { [key: string]: OpenableLootDropMap[] };
 }
 
 export interface AbilityDetailMap {
@@ -119,7 +120,13 @@ export enum DependencyHrid {
   CombatTriggerDependenciesSelf = "/combat_trigger_dependencies/self",
   CombatTriggerDependenciesTargetedEnemy = "/combat_trigger_dependencies/targeted_enemy",
 }
-
+export interface OpenableLootDropMap {
+  itemHrid: string;
+  dropRate: number;
+  minCount: number;
+  maxCount: number;
+  minEliteTier: number;
+}
 export interface ActionTypeDetailMap {
   hrid: string;
   name: string;

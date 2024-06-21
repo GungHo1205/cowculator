@@ -44,6 +44,11 @@ export default function Combat({
       },
     });
   }, [action, kph]);
+  const checkActionIfDungeon = (action: string | null) => {
+    if (action === null) {
+      return false;
+    } else return data.actionDetails[action].combatZoneInfo?.isDungeon;
+  };
   return (
     <Flex
       gap="sm"
@@ -67,37 +72,51 @@ export default function Combat({
         <NumberInput
           value={kph}
           onChange={(val) => setKph(val || 0)}
-          label="Encounters/hr"
+          label={checkActionIfDungeon(action) ? "Chests" : "Encounters/hr"}
           withAsterisk
           hideControls
           min={0}
           precision={2}
         />
-        <NumberInput
-          value={combatBuffLevel}
-          onChange={setCombatBuffLevel}
-          label="Combat Buff Level"
-          withAsterisk
-          hideControls
-          min={0}
-          max={20}
-        />
-        <NumberInput
-          value={partyAmount}
-          onChange={setPartyAmount}
-          label="Party amount"
-          withAsterisk
-          hideControls
-          min={1}
-          max={3}
-        />
-        <Switch
-          onLabel="WITH Lucky Coffee"
-          offLabel="NO Lucky Coffee"
-          size="xl"
-          checked={withLuckyCoffee}
-          onChange={(event) => setWithLuckyCoffee(event.currentTarget.checked)}
-        />
+        {checkActionIfDungeon(action) ? (
+          <></>
+        ) : (
+          <NumberInput
+            value={combatBuffLevel}
+            onChange={setCombatBuffLevel}
+            label="Combat Buff Level"
+            withAsterisk
+            hideControls
+            min={0}
+            max={20}
+          />
+        )}
+        {checkActionIfDungeon(action) ? (
+          <></>
+        ) : (
+          <NumberInput
+            value={partyAmount}
+            onChange={setPartyAmount}
+            label="Party amount"
+            withAsterisk
+            hideControls
+            min={1}
+            max={3}
+          />
+        )}
+        {checkActionIfDungeon(action) ? (
+          <></>
+        ) : (
+          <Switch
+            onLabel="WITH Lucky Coffee"
+            offLabel="NO Lucky Coffee"
+            size="xl"
+            checked={withLuckyCoffee}
+            onChange={(event) =>
+              setWithLuckyCoffee(event.currentTarget.checked)
+            }
+          />
+        )}
       </Group>
       {action && kph > 0 && (
         <CombatTable
@@ -107,6 +126,7 @@ export default function Combat({
           withLuckyCoffee={withLuckyCoffee}
           combatBuffLevel={Math.max(0, Math.min(20, Number(combatBuffLevel)))}
           partyAmount={Math.max(1, Math.min(3, Number(partyAmount)))}
+          dungeon={checkActionIfDungeon(action)!}
         />
       )}
     </Flex>
