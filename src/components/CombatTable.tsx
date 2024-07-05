@@ -198,6 +198,74 @@ export default function CombatTable({
       </tr>
     );
   });
+  const isDungeonToken = (item: MarketValue & ItemDetail): boolean => {
+    if (
+      item.hrid === "/items/enchanted_token" ||
+      item.hrid === "/items/sinister_token" ||
+      item.hrid === "/items/chimerical_token"
+    )
+      return true;
+    else return false;
+  };
+  const tokenToEssenceMap = (token: MarketValue & ItemDetail) => {
+    if (token.hrid === "/items/enchanted_token") {
+      return data.itemDetails["/items/enchanted_essence"];
+    } else if (token.hrid === "/items/sinister_token") {
+      return data.itemDetails["/items/sinister_essence"];
+    } else if (token.hrid === "/items/chimerical_token") {
+      return data.itemDetails["/items/chimerical_essence"];
+    }
+    return token;
+  };
+  const setTokenPrice = (item: MarketValue & ItemDetail): number => {
+    if (item.hrid === "/items/coin") return 1;
+    else if (item.hrid === "/items/enchanted_token") {
+      return (
+        priceOverrides["/items/enchanted_token"] ||
+        Math.round(
+          ((data.itemDetails["/items/enchanted_essence"].ask < 1
+            ? 0
+            : data.itemDetails["/items/enchanted_essence"].ask) +
+            (data.itemDetails["/items/enchanted_essence"].bid < 1
+              ? 0
+              : data.itemDetails["/items/enchanted_essence"].bid)) /
+            2
+        )
+      );
+    } else if (item.hrid === "/items/sinister_token") {
+      return (
+        priceOverrides["/items/sinister_token"] ||
+        Math.round(
+          ((data.itemDetails["/items/sinister_essence"].ask < 1
+            ? 0
+            : data.itemDetails["/items/sinister_essence"].ask) +
+            (data.itemDetails["/items/sinister_essence"].bid < 1
+              ? 0
+              : data.itemDetails["/items/sinister_essence"].bid)) /
+            2
+        )
+      );
+    } else if (item.hrid === "/items/chimerical_token") {
+      return (
+        priceOverrides["/items/chimerical_token"] ||
+        Math.round(
+          ((data.itemDetails["/items/chimerical_essence"].ask < 1
+            ? 0
+            : data.itemDetails["/items/chimerical_essence"].ask) +
+            (data.itemDetails["/items/chimerical_essence"].bid < 1
+              ? 0
+              : data.itemDetails["/items/chimerical_essence"].bid)) /
+            2
+        )
+      );
+    }
+    return (
+      priceOverrides[item.hrid] ||
+      Math.round(
+        ((item.ask < 1 ? 0 : item.ask) + (item.bid < 1 ? 0 : item.bid)) / 2
+      )
+    );
+  };
 
   const getItemPrice = (item: MarketValue & ItemDetail): number => {
     if (item.hrid === "/items/coin") return 1;
@@ -322,9 +390,15 @@ export default function CombatTable({
     const coinPerItem =
       loot.itemHrid === "/items/large_treasure_chest"
         ? getTreasureChestValue(avgDropPerChest)
+        : isDungeonToken(item)
+        ? setTokenPrice(data.itemDetails[loot.itemHrid])
         : getItemPrice(item);
-    const itemAsk = getItemAsk(item);
-    const itemBid = getItemBid(item);
+    const itemAsk = isDungeonToken(item)
+      ? getItemAsk(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
+      : getItemAsk(item);
+    const itemBid = isDungeonToken(item)
+      ? getItemBid(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
+      : getItemBid(item);
 
     const coinPerChest = coinPerItem * avgDropPerChest;
     const coinPerChestWithKph = coinPerItem * avgDropPerChest * kph;

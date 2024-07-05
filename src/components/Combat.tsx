@@ -33,7 +33,7 @@ export default function Combat({
       label: x.name,
     }));
   useEffect(() => {
-    console.log(loadedSaveData.skills.combatLoot.data.zone); // toggle if new people are allowed
+    // toggle if new people are allowed
     loadedSaveData.skills.combatLoot.data.zone === ""
       ? setAction("/actions/combat/fly")
       : setAction(loadedSaveData.skills.combatLoot.data.zone);
