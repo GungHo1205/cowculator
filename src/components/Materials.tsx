@@ -22,9 +22,12 @@ interface Props {
   skill: Skill;
   itemBonusEfficiency: { eyeWatch: number; redChefsHat: number };
 }
-
+let exportInputCostEnchanted: number;
+let exportInputCostSinister: number;
+let exportInputCostChimerical: number;
+let exportMarketRows: JSX.Element[];
 export default function Materials({
-  actionCategory,
+  actionCategory = "/action_categories/crafting/dungeon_keys",
   data,
   effectiveLevel,
   xp,
@@ -38,14 +41,13 @@ export default function Materials({
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});
-
   const {
     wisdomTeaBonus,
     efficiencyTeaBonus,
     artisanTeaBonus,
     gourmetTeaBonus,
   } = getTeaBonuses(teas, skill);
-
+  let key;
   const actions = useMemo(
     () =>
       Object.values(data.actionDetails)
@@ -100,7 +102,6 @@ export default function Materials({
 
     return +price.toFixed(2);
   };
-
   const rows = actions.map((x) => {
     let seconds = getActionSeconds(x.baseTimeCost, toolBonus);
     let exp = x.experienceGain.value * wisdomTeaBonus;
@@ -119,7 +120,6 @@ export default function Materials({
     let inputs: Cost[] = x.inputItems?.slice() || [];
     let upgradeHrid = x.upgradeItemHrid;
     const actions = [x];
-
     while (fromRaw && upgradeHrid) {
       const newItem = upgradeHrid.split("/").pop();
       if (!newItem) break;
@@ -168,7 +168,6 @@ export default function Materials({
     const profitPerHour = (profit / seconds) * 3600 * efficiency;
 
     const outputItem = outputItems?.[0];
-
     return (
       <tr key={x.hrid}>
         <td>{levelReq}</td>
@@ -195,7 +194,77 @@ export default function Materials({
       </tr>
     );
   });
+  const exportRows = actions.map((x) => {
+    let inputs: Cost[] = x.inputItems?.slice() || [];
+    let upgradeHrid = x.upgradeItemHrid;
+    const actions = [x];
+    while (fromRaw && upgradeHrid) {
+      const newItem = upgradeHrid.split("/").pop();
+      if (!newItem) break;
+      const newActionHrid = x.hrid
+        .split("/")
+        .slice(0, -1)
+        .concat([newItem])
+        .join("/");
+      const newAction = data.actionDetails[newActionHrid];
+      if (newAction.inputItems) {
+        inputs = inputs.concat(newAction.inputItems);
+        actions.push(newAction);
+      }
 
+      upgradeHrid = newAction.upgradeItemHrid;
+    }
+
+    inputs = inputs.map((y) => {
+      return {
+        ...y,
+        count: y.count * artisanTeaBonus,
+      };
+    });
+
+    const outputItems =
+      x.outputItems?.map((y) => {
+        return {
+          ...y,
+          count: y.count * gourmetTeaBonus,
+        };
+      }) ?? null;
+
+    const inputCost = getAveragePrice(inputs);
+    const outputItem = outputItems?.[0];
+    if (x.hrid.includes("key")) {
+      if (x.hrid.includes("enchanted")) {
+        exportInputCostEnchanted = getAveragePrice(inputs);
+      }
+      if (x.hrid.includes("sinister")) {
+        exportInputCostSinister = getAveragePrice(inputs);
+      }
+      if (x.hrid.includes("chimerical")) {
+        exportInputCostChimerical = getAveragePrice(inputs);
+      }
+
+      key = true;
+    }
+    return (
+      <tr key={x.hrid}>
+        <td>
+          <Flex
+            justify="flex-start"
+            align="center"
+            direction="row"
+            wrap="wrap"
+            gap="xs"
+          >
+            {outputItem && <Icon hrid={outputItem.itemHrid} />} {x.name}
+          </Flex>
+        </td>
+        <td>{getFriendlyIntString(inputCost, 2)}</td>
+      </tr>
+    );
+  });
+  if (key) {
+    exportMarketRows = exportRows;
+  }
   const marketRows = relevantItems
     .filter((x) => x.hrid !== "/items/coin")
     .map((x, i) => {
@@ -231,7 +300,6 @@ export default function Materials({
         </tr>
       );
     });
-
   return (
     <>
       <Flex
@@ -279,3 +347,9 @@ export default function Materials({
     </>
   );
 }
+export {
+  exportInputCostEnchanted,
+  exportInputCostSinister,
+  exportInputCostChimerical,
+  exportMarketRows,
+};

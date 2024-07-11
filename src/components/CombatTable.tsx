@@ -13,6 +13,12 @@ import { MarketValue } from "../models/Market";
 import { ApiData } from "../services/ApiService";
 import { Flex, NumberInput, Switch, Table } from "@mantine/core";
 import Icon from "./Icon";
+import {
+  exportInputCostChimerical,
+  exportInputCostEnchanted,
+  exportInputCostSinister,
+  exportMarketRows,
+} from "./Materials";
 
 type Enemies = {
   combatMonsterHrid: string;
@@ -609,7 +615,44 @@ export default function CombatTable({
 
       return acc;
     }, new Map<string, LootData>());
+
   const openableLootData = Array.from(openableLootMap.values());
+
+  const totalCoins = (dungeon: boolean) => {
+    if (dungeon) {
+      return openableLootData.reduce((acc, val) => acc + val.totalCoins, 0);
+    } else {
+      return lootData.reduce((acc, val) => acc + val.coinPerHour, 0);
+    }
+  };
+
+  const totalCoinsPerChest = () => {
+    return openableLootData.reduce((acc, val) => acc + val.coinPerChest, 0);
+  };
+
+  let expectedValue: JSX.Element;
+  if (action === "/actions/combat/chimerical_den") {
+    expectedValue = (
+      <>
+        {getFriendlyIntString(totalCoinsPerChest() - exportInputCostChimerical)}
+      </>
+    );
+  } else if (action === "/actions/combat/sinister_circus") {
+    expectedValue = (
+      <>
+        {getFriendlyIntString(totalCoinsPerChest() - exportInputCostSinister)}
+      </>
+    );
+  } else if (action === "/actions/combat/enchanted_fortress") {
+    expectedValue = (
+      <>
+        {getFriendlyIntString(totalCoinsPerChest() - exportInputCostEnchanted)}
+      </>
+    );
+  } else {
+    expectedValue = <td></td>;
+  }
+
   const openableLootRows = openableLootData.map((x, i) => {
     return (
       <tr key={`${action}/loot/${i}/${x.itemHrid}`}>
@@ -647,6 +690,7 @@ export default function CombatTable({
         <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest)}</td>
         <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest * kph)}</td>
         {i === 1 ? <td>{x.tokenOption}</td> : <td></td>}
+        {i === 0 ? <td>{expectedValue}</td> : <td></td>}
       </tr>
     );
   });
@@ -693,16 +737,6 @@ export default function CombatTable({
     );
   });
 
-  const totalCoins = (dungeon: boolean) => {
-    if (dungeon) {
-      return openableLootData.reduce((acc, val) => acc + val.totalCoins, 0);
-    } else {
-      return lootData.reduce((acc, val) => acc + val.coinPerHour, 0);
-    }
-  };
-  const totalCoinsPerChest = () => {
-    return openableLootData.reduce((acc, val) => acc + val.coinPerChest, 0);
-  };
   return (
     <>
       <Flex
@@ -712,79 +746,101 @@ export default function CombatTable({
         wrap="wrap"
         direction="row"
       >
-        <Flex>
-          <Table striped highlightOnHover withBorder withColumnBorders>
-            <thead>
-              <tr>
-                <th>Loot</th>
-                {dungeon ? (
-                  <th>Rate/Chest</th>
-                ) : (
-                  <th>{fromRaw ? "Rate/day" : "Rate/hr"}</th>
-                )}
-                {dungeon ? <th>Total Drops</th> : <></>}
-                <th>Price/item</th>
-                {dungeon ? (
-                  <th>Coins/Chest</th>
-                ) : (
-                  <th>{fromRaw ? "Coin/day" : "Coin/hr"}</th>
-                )}
-                {dungeon ? <th>Total Coins</th> : <th></th>}
+        <Flex
+          gap="sm"
+          justify="flex-start"
+          align="flex-start"
+          wrap="wrap"
+          direction="row"
+        >
+          <Flex>
+            <Table striped highlightOnHover withBorder withColumnBorders>
+              <thead>
+                <tr>
+                  <th>Loot</th>
+                  {dungeon ? (
+                    <th>Rate/Chest</th>
+                  ) : (
+                    <th>{fromRaw ? "Rate/day" : "Rate/hr"}</th>
+                  )}
+                  {dungeon ? <th>Total Drops</th> : <></>}
+                  <th>Price/item</th>
+                  {dungeon ? (
+                    <th>Coins/Chest</th>
+                  ) : (
+                    <th>{fromRaw ? "Coin/day" : "Coin/hr"}</th>
+                  )}
+                  {dungeon ? <th>Total Coins</th> : <th></th>}
 
-                {dungeon ? <th>Token Option</th> : <></>}
-              </tr>
-            </thead>
-            <tbody>
-              {dungeon ? openableLootRows : lootRows}
-              <tr>
-                <th colSpan={3}>Total</th>
-                {dungeon ? <td></td> : <></>}
-                <td>
-                  {dungeon
-                    ? getFriendlyIntString(totalCoinsPerChest())
-                    : getFriendlyIntString(
-                        fromRaw ? totalCoins(dungeon) * 24 : totalCoins(dungeon)
-                      )}
-                </td>
-
-                {dungeon ? (
-                  <td>{getFriendlyIntString(totalCoins(dungeon))}</td>
-                ) : (
+                  {dungeon ? <th>Token Option</th> : <></>}
+                  {dungeon ? <th>Expected Profit</th> : <></>}
+                </tr>
+              </thead>
+              <tbody>
+                {dungeon ? openableLootRows : lootRows}
+                <tr>
+                  <th colSpan={3}>Total</th>
+                  {dungeon ? <td></td> : <></>}
                   <td>
-                    {" "}
-                    <Switch
-                      onLabel="DAY"
-                      offLabel="HOUR"
-                      label="Per hour or day"
-                      size="xl"
-                      checked={fromRaw}
-                      onChange={(event) =>
-                        setFromRaw(event.currentTarget.checked)
-                      }
-                    />
+                    {dungeon
+                      ? getFriendlyIntString(totalCoinsPerChest())
+                      : getFriendlyIntString(
+                          fromRaw
+                            ? totalCoins(dungeon) * 24
+                            : totalCoins(dungeon)
+                        )}
                   </td>
-                )}
-                {dungeon ? <td></td> : <></>}
-              </tr>
-            </tbody>
-          </Table>
+
+                  {dungeon ? (
+                    <td>{getFriendlyIntString(totalCoins(dungeon))}</td>
+                  ) : (
+                    <td>
+                      {" "}
+                      <Switch
+                        onLabel="DAY"
+                        offLabel="HOUR"
+                        label="Per hour or day"
+                        size="xl"
+                        checked={fromRaw}
+                        onChange={(event) =>
+                          setFromRaw(event.currentTarget.checked)
+                        }
+                      />
+                    </td>
+                  )}
+                  {dungeon ? <td></td> : <></>}
+                  {dungeon ? <td></td> : <></>}
+                </tr>
+              </tbody>
+            </Table>
+          </Flex>
         </Flex>
+        {dungeon ? (
+          <Flex>
+            <Table striped highlightOnHover withBorder withColumnBorders>
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th>Input Cost</th>
+                </tr>
+              </thead>
+              <tbody>{exportMarketRows}</tbody>
+            </Table>
+          </Flex>
+        ) : (
+          <Flex>
+            <Table striped highlightOnHover withBorder withColumnBorders>
+              <thead>
+                <tr>
+                  <th>Monster</th>
+                  <th>Encounter Rate</th>
+                </tr>
+              </thead>
+              <tbody>{encounterRows}</tbody>
+            </Table>
+          </Flex>
+        )}
       </Flex>
-      {dungeon ? (
-        <></>
-      ) : (
-        <Flex>
-          <Table striped highlightOnHover withBorder withColumnBorders>
-            <thead>
-              <tr>
-                <th>Monster</th>
-                <th>Encounter Rate</th>
-              </tr>
-            </thead>
-            <tbody>{encounterRows}</tbody>
-          </Table>
-        </Flex>
-      )}
     </>
   );
 }

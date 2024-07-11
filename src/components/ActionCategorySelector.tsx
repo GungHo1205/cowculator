@@ -162,7 +162,7 @@ export default function ActionCategorySelector({
     [skill, data.actionCategoryDetails]
   );
 
-  const [category, setCategory] = useState(options[0].value);
+  const [category, setCategory] = useState(options.at(-1)!.value);
 
   const effectiveLevel = (level || 1) + levelTeaBonus;
 
