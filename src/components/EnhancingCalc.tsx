@@ -34,7 +34,6 @@ export default function EnhancingCalc({
   const toolBonus = toolPercent * 0.01;
   const action = data.actionDetails["/actions/enhancing/enhance"];
   const [protCostOverride, setProtCostOverride] = useState<number | "">("");
-  // const [protLevelOverride, setProtLevelOverride] = useState<number | "">("");
   const [priceOverrides, setPriceOverrides] = useState<{
     [key: string]: number | "";
   }>({});

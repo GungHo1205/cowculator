@@ -28,6 +28,7 @@ export interface ClientResponse {
   chatIconDetailMap: { [key: string]: ChatIconDetailMap };
   communityBuffTypeDetailMap: CommunityBuffTypeDetailMap;
   openableLootDropMap: { [key: string]: OpenableLootDropMap[] };
+  shopItemDetailMap: { [key: string]: ShopItemDetailMap };
 }
 
 export interface AbilityDetailMap {
@@ -126,6 +127,13 @@ export interface OpenableLootDropMap {
   minCount: number;
   maxCount: number;
   minEliteTier: number;
+}
+export interface ShopItemDetailMap {
+  hrid: string;
+  category: string;
+  itemHrid: string;
+  costs: Cost[];
+  sortIndex: number;
 }
 export interface ActionTypeDetailMap {
   hrid: string;

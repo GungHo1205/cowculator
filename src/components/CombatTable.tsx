@@ -3,7 +3,12 @@ import {
   getFriendlyIntString,
   getFriendlyIntStringRate,
 } from "../helpers/Formatting";
-import { ItemDetail, OpenableLootDropMap } from "../models/Client";
+import {
+  actionToChestMap,
+  actionToTokenMap,
+  isDungeonToken,
+} from "../helpers/Utils";
+import { Cost, ItemDetail, OpenableLootDropMap } from "../models/Client";
 import { MarketValue } from "../models/Market";
 import { ApiData } from "../services/ApiService";
 import { Flex, NumberInput, Switch, Table } from "@mantine/core";
@@ -18,11 +23,13 @@ type OpenableLootDropData = {
   itemHrid: string;
   itemName: string;
   dropsPerChest: number;
+  totalDrops: number;
   coinPerItem: number;
   coinPerChest: number;
   totalCoins: number;
   itemAsk: number;
   itemBid: number;
+  tokenOption?: string;
 };
 
 type LootData = {
@@ -58,7 +65,6 @@ export default function CombatTable({
     [key: string]: number | "";
   }>({});
   const [fromRaw, setFromRaw] = useState(false);
-
   const getRandomEncounter = () => {
     const spawns =
       data.actionDetails[action].combatZoneInfo!.fightInfo.randomSpawnInfo
@@ -198,15 +204,7 @@ export default function CombatTable({
       </tr>
     );
   });
-  const isDungeonToken = (item: MarketValue & ItemDetail): boolean => {
-    if (
-      item.hrid === "/items/enchanted_token" ||
-      item.hrid === "/items/sinister_token" ||
-      item.hrid === "/items/chimerical_token"
-    )
-      return true;
-    else return false;
-  };
+
   const tokenToEssenceMap = (token: MarketValue & ItemDetail) => {
     if (token.hrid === "/items/enchanted_token") {
       return data.itemDetails["/items/enchanted_essence"];
@@ -217,55 +215,55 @@ export default function CombatTable({
     }
     return token;
   };
-  const setTokenPrice = (item: MarketValue & ItemDetail): number => {
-    if (item.hrid === "/items/coin") return 1;
-    else if (item.hrid === "/items/enchanted_token") {
-      return (
-        priceOverrides["/items/enchanted_token"] ||
-        Math.round(
-          ((data.itemDetails["/items/enchanted_essence"].ask < 1
-            ? 0
-            : data.itemDetails["/items/enchanted_essence"].ask) +
-            (data.itemDetails["/items/enchanted_essence"].bid < 1
-              ? 0
-              : data.itemDetails["/items/enchanted_essence"].bid)) /
-            2
-        )
-      );
-    } else if (item.hrid === "/items/sinister_token") {
-      return (
-        priceOverrides["/items/sinister_token"] ||
-        Math.round(
-          ((data.itemDetails["/items/sinister_essence"].ask < 1
-            ? 0
-            : data.itemDetails["/items/sinister_essence"].ask) +
-            (data.itemDetails["/items/sinister_essence"].bid < 1
-              ? 0
-              : data.itemDetails["/items/sinister_essence"].bid)) /
-            2
-        )
-      );
-    } else if (item.hrid === "/items/chimerical_token") {
-      return (
-        priceOverrides["/items/chimerical_token"] ||
-        Math.round(
-          ((data.itemDetails["/items/chimerical_essence"].ask < 1
-            ? 0
-            : data.itemDetails["/items/chimerical_essence"].ask) +
-            (data.itemDetails["/items/chimerical_essence"].bid < 1
-              ? 0
-              : data.itemDetails["/items/chimerical_essence"].bid)) /
-            2
-        )
-      );
-    }
-    return (
-      priceOverrides[item.hrid] ||
-      Math.round(
-        ((item.ask < 1 ? 0 : item.ask) + (item.bid < 1 ? 0 : item.bid)) / 2
-      )
-    );
-  };
+  // const setTokenPrice = (item: MarketValue & ItemDetail): number => {
+  //   if (item.hrid === "/items/coin") return 1;
+  //   else if (item.hrid === "/items/enchanted_token") {
+  //     return (
+  //       priceOverrides["/items/enchanted_token"] ||
+  //       Math.round(
+  //         ((data.itemDetails["/items/enchanted_essence"].ask < 1
+  //           ? 0
+  //           : data.itemDetails["/items/enchanted_essence"].ask) +
+  //           (data.itemDetails["/items/enchanted_essence"].bid < 1
+  //             ? 0
+  //             : data.itemDetails["/items/enchanted_essence"].bid)) /
+  //           2
+  //       )
+  //     );
+  //   } else if (item.hrid === "/items/sinister_token") {
+  //     return (
+  //       priceOverrides["/items/sinister_token"] ||
+  //       Math.round(
+  //         ((data.itemDetails["/items/sinister_essence"].ask < 1
+  //           ? 0
+  //           : data.itemDetails["/items/sinister_essence"].ask) +
+  //           (data.itemDetails["/items/sinister_essence"].bid < 1
+  //             ? 0
+  //             : data.itemDetails["/items/sinister_essence"].bid)) /
+  //           2
+  //       )
+  //     );
+  //   } else if (item.hrid === "/items/chimerical_token") {
+  //     return (
+  //       priceOverrides["/items/chimerical_token"] ||
+  //       Math.round(
+  //         ((data.itemDetails["/items/chimerical_essence"].ask < 1
+  //           ? 0
+  //           : data.itemDetails["/items/chimerical_essence"].ask) +
+  //           (data.itemDetails["/items/chimerical_essence"].bid < 1
+  //             ? 0
+  //             : data.itemDetails["/items/chimerical_essence"].bid)) /
+  //           2
+  //       )
+  //     );
+  //   }
+  //   return (
+  //     priceOverrides[item.hrid] ||
+  //     Math.round(
+  //       ((item.ask < 1 ? 0 : item.ask) + (item.bid < 1 ? 0 : item.bid)) / 2
+  //     )
+  //   );
+  // };
 
   const getItemPrice = (item: MarketValue & ItemDetail): number => {
     if (item.hrid === "/items/coin") return 1;
@@ -314,19 +312,44 @@ export default function CombatTable({
     return result;
   };
 
-  const actionToChestMap = (action: string) => {
-    if (action === "/actions/combat/chimerical_den") {
-      return "/items/chimerical_chest";
-    } else if (action === "/actions/combat/sinister_circus") {
-      return "/items/sinister_chest";
-    } else if (action === "/actions/combat/enchanted_fortress") {
-      return "/items/enchanted_chest";
+  const getPurchaseableItemsFromDungeon = (token: string) => {
+    const purchaseAbleItemsInDungeon: Cost[] = [];
+    for (const item of Object.keys(data.shopItemDetailMap).map(
+      (key) => data.shopItemDetailMap[key]
+    )) {
+      for (const cost of item.costs) {
+        if (cost.itemHrid === token) {
+          purchaseAbleItemsInDungeon.push({
+            itemHrid: item.itemHrid,
+            count: cost.count,
+          });
+        }
+      }
     }
+    return purchaseAbleItemsInDungeon;
   };
+
+  const getMostExpensiveOptionFromToken = (items: Cost[]) => {
+    let max = 0;
+    let currentMaxItem;
+    let count;
+    for (const item of items) {
+      const itemDetails = data.itemDetails[item.itemHrid];
+      if (getItemPrice(itemDetails) > max) {
+        max = getItemPrice(itemDetails) / item.count;
+        count = item.count;
+        currentMaxItem = itemDetails;
+      }
+    }
+    return { item: currentMaxItem, price: max, count: count };
+  };
+
   const getTreasureChestValue = (amount: number) => {
     const treasureChestDropMapData =
       data.openableLootDropMap["/items/large_treasure_chest"];
+
     const treasureChestLootTable: OpenableLootDropData[] = [];
+
     for (const loot of treasureChestDropMapData as OpenableLootDropMap[]) {
       const avgDrop = (loot.minCount + loot.maxCount) / 2;
       const item = data.itemDetails[loot.itemHrid];
@@ -336,11 +359,13 @@ export default function CombatTable({
       const itemBid = getItemBid(item);
       const coinPerChest = coinPerItem * avgDropPerChest;
       const totalCoin = coinPerItem * avgDropPerChest * amount;
+      const totalDrops = avgDrop * loot.dropRate * kph;
 
       treasureChestLootTable.push({
         itemHrid: item.hrid,
         itemName: item.name,
         dropsPerChest: avgDropPerChest,
+        totalDrops: totalDrops,
         coinPerItem: coinPerItem,
         coinPerChest: coinPerChest,
         totalCoins: totalCoin,
@@ -348,6 +373,7 @@ export default function CombatTable({
         itemBid: itemBid,
       } as OpenableLootDropData);
     }
+
     const treasureChestLootMap = treasureChestLootTable.reduce((acc, val) => {
       const temp = acc.get(val.itemHrid);
       if (temp) {
@@ -355,6 +381,7 @@ export default function CombatTable({
           itemHrid: val.itemHrid,
           itemName: val.itemName,
           dropsPerChest: val.dropsPerChest + temp.dropsPerChest,
+          totalDrops: val.totalDrops + temp.totalDrops,
           coinPerItem: val.coinPerItem,
           coinPerChest: val.coinPerChest + temp.coinPerChest,
           totalCoins: val.totalCoins + temp.totalCoins,
@@ -366,6 +393,7 @@ export default function CombatTable({
           itemHrid: val.itemHrid,
           itemName: val.itemName,
           dropsPerChest: val.dropsPerChest,
+          totalDrops: val.totalDrops,
           coinPerItem: val.coinPerItem,
           coinPerChest: val.coinPerChest,
           totalCoins: val.totalCoins,
@@ -376,71 +404,106 @@ export default function CombatTable({
       return acc;
     }, new Map<string, OpenableLootDropData>());
     const treasureChestLootData = Array.from(treasureChestLootMap.values());
+
     return treasureChestLootData.reduce((acc, val) => acc + val.totalCoins, 0);
   };
+
   const activeChest = actionToChestMap(action);
+
   const openableLootDropMapData = activeChest
     ? data.openableLootDropMap[activeChest]
     : [];
   const openableLootTable: OpenableLootDropData[] = [];
+
   for (const loot of openableLootDropMapData as OpenableLootDropMap[]) {
     const avgDrop = (loot.minCount + loot.maxCount) / 2;
+
     const item = data.itemDetails[loot.itemHrid];
+
     const avgDropPerChest = avgDrop * loot.dropRate;
+    const mostExpensiveOptionFromToken = getMostExpensiveOptionFromToken(
+      getPurchaseableItemsFromDungeon(actionToTokenMap(action))
+    );
+
+    const tokenOption =
+      mostExpensiveOptionFromToken.item !== undefined
+        ? mostExpensiveOptionFromToken.item.name
+        : "/items/enchanted_essence";
     const coinPerItem =
       loot.itemHrid === "/items/large_treasure_chest"
         ? getTreasureChestValue(avgDropPerChest)
         : isDungeonToken(item)
-        ? setTokenPrice(data.itemDetails[loot.itemHrid])
+        ? mostExpensiveOptionFromToken.price
         : getItemPrice(item);
     const itemAsk = isDungeonToken(item)
-      ? getItemAsk(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
+      ? getMostExpensiveOptionFromToken(
+          getPurchaseableItemsFromDungeon(actionToTokenMap(action))
+        ).item !== undefined
+        ? getItemAsk(mostExpensiveOptionFromToken.item!) /
+          mostExpensiveOptionFromToken.count!
+        : getItemAsk(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
       : getItemAsk(item);
+
     const itemBid = isDungeonToken(item)
-      ? getItemBid(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
+      ? mostExpensiveOptionFromToken.item !== undefined
+        ? getItemBid(mostExpensiveOptionFromToken.item!) /
+          mostExpensiveOptionFromToken.count!
+        : getItemAsk(tokenToEssenceMap(data.itemDetails[loot.itemHrid]))
       : getItemBid(item);
 
     const coinPerChest = coinPerItem * avgDropPerChest;
+
+    const totalDrops = avgDrop * loot.dropRate * kph;
+
     const coinPerChestWithKph = coinPerItem * avgDropPerChest * kph;
+
     openableLootTable.push({
       itemHrid: item.hrid,
       itemName: item.name,
       dropsPerChest: avgDropPerChest,
+      totalDrops: totalDrops,
       coinPerItem: coinPerItem,
       coinPerChest: coinPerChest,
       totalCoins: coinPerChestWithKph,
       itemAsk: itemAsk,
       itemBid: itemBid,
+      tokenOption: tokenOption,
     } as OpenableLootDropData);
   }
 
   const openableLootMap = openableLootTable.reduce((acc, val) => {
     const temp = acc.get(val.itemHrid);
+
     if (temp) {
       acc.set(val.itemHrid, {
         itemHrid: val.itemHrid,
         itemName: val.itemName,
         dropsPerChest: val.dropsPerChest + temp.dropsPerChest,
+        totalDrops: val.totalDrops + temp.totalDrops,
         coinPerItem: val.coinPerItem,
         coinPerChest: val.coinPerChest + temp.coinPerChest,
         totalCoins: val.totalCoins + temp.totalCoins,
         itemAsk: val.itemAsk,
         itemBid: val.itemBid,
+        tokenOption: val.tokenOption,
       });
     } else {
       acc.set(val.itemHrid, {
         itemHrid: val.itemHrid,
         itemName: val.itemName,
         dropsPerChest: val.dropsPerChest,
+        totalDrops: val.totalDrops,
         coinPerItem: val.coinPerItem,
         coinPerChest: val.coinPerChest,
         totalCoins: val.totalCoins,
         itemAsk: val.itemAsk,
         itemBid: val.itemBid,
+        tokenOption: val.tokenOption,
       });
     }
     return acc;
   }, new Map<string, OpenableLootDropData>());
+
   const lootMap = enemies
     .flatMap((x) => {
       const elite = data.actionDetails[action].hrid.includes("elite");
@@ -562,11 +625,16 @@ export default function CombatTable({
           </Flex>
         </td>
         <td>{getFriendlyIntStringRate(x.dropsPerChest)}</td>
+        <td>{getFriendlyIntStringRate(x.totalDrops)}</td>
         <td>
           <NumberInput
             hideControls
             value={priceOverrides[x.itemHrid]}
-            placeholder={x.itemAsk.toString() + " / " + x.itemBid.toString()}
+            placeholder={
+              getFriendlyIntString(x.itemAsk).toString() +
+              " / " +
+              getFriendlyIntString(x.itemBid).toString()
+            }
             disabled={x.itemHrid === "/items/coin"}
             onChange={(y) =>
               setPriceOverrides({
@@ -578,6 +646,7 @@ export default function CombatTable({
         </td>
         <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest)}</td>
         <td>{getFriendlyIntString(x.coinPerItem * x.dropsPerChest * kph)}</td>
+        {i === 1 ? <td>{x.tokenOption}</td> : <td></td>}
       </tr>
     );
   });
@@ -653,22 +722,23 @@ export default function CombatTable({
                 ) : (
                   <th>{fromRaw ? "Rate/day" : "Rate/hr"}</th>
                 )}
+                {dungeon ? <th>Total Drops</th> : <></>}
                 <th>Price/item</th>
                 {dungeon ? (
                   <th>Coins/Chest</th>
                 ) : (
                   <th>{fromRaw ? "Coin/day" : "Coin/hr"}</th>
                 )}
-                {dungeon ? <th>Total Coins</th> : <></>}
+                {dungeon ? <th>Total Coins</th> : <th></th>}
 
-                {dungeon ? <></> : <th></th>}
+                {dungeon ? <th>Token Option</th> : <></>}
               </tr>
             </thead>
             <tbody>
               {dungeon ? openableLootRows : lootRows}
               <tr>
                 <th colSpan={3}>Total</th>
-
+                {dungeon ? <td></td> : <></>}
                 <td>
                   {dungeon
                     ? getFriendlyIntString(totalCoinsPerChest())
@@ -694,6 +764,7 @@ export default function CombatTable({
                     />
                   </td>
                 )}
+                {dungeon ? <td></td> : <></>}
               </tr>
             </tbody>
           </Table>

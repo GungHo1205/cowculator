@@ -165,7 +165,7 @@ export default function App() {
               <Tabs.Tab value="brewing">Brewing</Tabs.Tab>
               <Tabs.Tab value="enhancing">Enhancing</Tabs.Tab>
               <Tabs.Tab value="combatLoot">Combat Loot</Tabs.Tab>
-              <Tabs.Tab value="combatLevel">Combat Level(WIP)</Tabs.Tab>
+              {/* <Tabs.Tab value="combatLevel">Combat Level(WIP)</Tabs.Tab> */}
               <Tabs.Tab value="market">Market</Tabs.Tab>
             </Tabs.List>
 
