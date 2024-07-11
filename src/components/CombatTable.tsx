@@ -341,8 +341,9 @@ export default function CombatTable({
     let count;
     for (const item of items) {
       const itemDetails = data.itemDetails[item.itemHrid];
-      if (getItemPrice(itemDetails) > max) {
-        max = getItemPrice(itemDetails) / item.count;
+      const avgTokenPriceForItem = getItemPrice(itemDetails) / item.count;
+      if (avgTokenPriceForItem > max) {
+        max = avgTokenPriceForItem;
         count = item.count;
         currentMaxItem = itemDetails;
       }
