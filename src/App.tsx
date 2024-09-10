@@ -301,12 +301,11 @@ function MainContent() {
 }
 const App: React.FC = () => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
-
   return (
     <Router>
       <Routes>
         <Route
-          path="/cowculator"
+          path="/"
           element={
             authenticated ? (
               <MainContent />

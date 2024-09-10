@@ -14,10 +14,8 @@ interface PasswordPageProps {
   onAuthenticate: () => void; // Expecting a function to be passed in
 }
 const passKey = import.meta.env.VITE_PASSWORD_KEY;
-console.log(import.meta.env.VITE_PASSWORD_KEY);
 const PasswordPage: React.FC<PasswordPageProps> = ({ onAuthenticate }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-
   const form = useForm({
     initialValues: {
       password: "",
