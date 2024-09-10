@@ -8,6 +8,12 @@ import {
   Tabs,
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import getApiData from "./services/ApiService";
 import { ActionType } from "./models/Client";
 import Market from "./components/Market";
@@ -16,6 +22,7 @@ import { Suspense, lazy, useState } from "react";
 import { Skill } from "./helpers/CommonFunctions";
 import { CombatData, SaveDataObject, SkillBonuses } from "./helpers/Types";
 import { saveDataObject, saveDataString } from "./helpers/Constants";
+import PreApp from "./PreApp";
 
 const ItemLookup = lazy(() => import("./components/ItemLookup"));
 const Enhancing = lazy(() => import("./components/Enhancing"));
@@ -24,7 +31,7 @@ const Calculator = lazy(() => import("./components/Calculator"));
 const Combat = lazy(() => import("./components/Combat"));
 const Character = lazy(() => import("./components/Character"));
 
-export default function App() {
+function MainContent() {
   const [marketMode, setMarketMode] = useState<boolean>(false);
 
   const { data, isLoading } = useQuery({
@@ -297,3 +304,25 @@ export default function App() {
     </AppShell>
   );
 }
+const App: React.FC = () => {
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/cowculator"
+          element={
+            authenticated ? (
+              <MainContent />
+            ) : (
+              <PreApp onAuthenticate={() => setAuthenticated(true)} />
+            )
+          }
+        />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;
