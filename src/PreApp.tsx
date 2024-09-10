@@ -10,11 +10,11 @@ import {
   Text,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Passwordd } from "./components/Password";
 interface PasswordPageProps {
   onAuthenticate: () => void; // Expecting a function to be passed in
 }
-
+const passKey = import.meta.env.VITE_PASSWORD_KEY;
+console.log(import.meta.env.VITE_PASSWORD_KEY);
 const PasswordPage: React.FC<PasswordPageProps> = ({ onAuthenticate }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
@@ -23,12 +23,12 @@ const PasswordPage: React.FC<PasswordPageProps> = ({ onAuthenticate }) => {
       password: "",
     },
     validate: {
-      password: (value) => (value === Passwordd ? null : "Invalid password"),
+      password: (value) => (value === passKey ? null : "Invalid password"),
     },
   });
 
   const handleSubmit = (values: { password: string }) => {
-    if (values.password === Passwordd) {
+    if (values.password === passKey) {
       setIsAuthenticated(true);
       onAuthenticate(); // Call the onAuthenticate function on successful authentication
     }

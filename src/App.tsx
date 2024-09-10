@@ -8,12 +8,7 @@ import {
   Tabs,
 } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import getApiData from "./services/ApiService";
 import { ActionType } from "./models/Client";
 import Market from "./components/Market";
